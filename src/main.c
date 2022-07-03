@@ -17,14 +17,15 @@ SpriteEntry OAMCopy[128];
 
 #include "events.c"
 
-volatile int frame = 0;
+volatile int HungerFrame = 0;
+volatile int MovementFrame = 0;
 int Hunger = 5;
 int Health = 5;
 
 enum { CONTINUOUS, SINGLE } TouchType = CONTINUOUS;
 
 void Vblank() {
-	frame++;
+	HungerFrame++;
 }
 
 //---------------------------------------------------------------------------------
@@ -300,18 +301,25 @@ int main(void) {
 
 		if(GameStart == true){
 			oamClear(&oamMain, 0, 127);
-			if(frame >= 100){
+
+			//Movement
+			if(MovementFrame >= 100){
+				MovementFrame = -1;
+				isGoing = false;
+			}
+
+			//Health & Hunger
+			if(HungerFrame >= 500){
 				if(Hunger == 0){
-					if(frame >= 200){
+					if(HungerFrame >= 700){
 						Health--;
-						frame = -1;
+						HungerFrame = -1;
 					}
 				}
 				else{
 					Hunger--;
-					frame = -1;
+					HungerFrame = -1;
 				}
-				isGoing = false;
 			}
 
 			if(isGoing == false){
@@ -345,7 +353,8 @@ int main(void) {
 			oamSet(&oamMain, 10, Food5.Xpos, Food5.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Food5.sprite_gfx_mem, -1, false, false, false, false, false);
 
-			frame++;
+			HungerFrame++;
+			MovementFrame++;
 		}
 		if(GameStart == false){
 			if(pressed & KEY_START){
