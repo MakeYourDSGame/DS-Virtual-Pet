@@ -92,62 +92,56 @@ int main(void) {
 	touchPosition touch;
    
    //Setting Video Modes
-    videoSetMode(  MODE_0_2D | 
-                   DISPLAY_SPR_ACTIVE |		//turn on sprites
-                   DISPLAY_BG0_ACTIVE |		//turn on background 0
-                   DISPLAY_SPR_1D			//this is used when in tile mode
-                    );
-
 	videoSetMode(MODE_5_2D);
-	videoSetModeSub(MODE_0_2D);
+	videoSetModeSub(MODE_5_2D);
 
-
-	//Setting the banks. Does not include the F bank
-	vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
-	vramSetBankD(VRAM_D_SUB_SPRITE);
-
-	//Set up oam
+	//Set up SpritesMapping
 	oamInit(&oamMain, SpriteMapping_1D_128, true);
-	oamInit(&oamSub, SpriteMapping_1D_128, false);
+	oamInit(&oamSub, SpriteMapping_1D_128, true);
 
-	//Set bank F
+	//Set F Bank.
 	vramSetBankF(VRAM_F_LCD);
+	//Pet
 	init16(&Pet, (u8*)Pet16Tiles);
 	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
-
-	init32(&Food1, (u8*)EnemyTiles);
-	dmaCopy(EnemyPal, &VRAM_F_EXT_SPR_PALETTE[1][0],EnemyPalLen);
-
-	init16(&Heart1, (u8*)HeartsTiles);
-	dmaCopy(HeartsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],HeartsPalLen);
-	init16(&Heart2, (u8*)HeartsTiles);
-	dmaCopy(HeartsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],HeartsPalLen);
-	init16(&Heart3, (u8*)HeartsTiles);
-	dmaCopy(HeartsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],HeartsPalLen);
-	init16(&Heart4, (u8*)HeartsTiles);
-	dmaCopy(HeartsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],HeartsPalLen);
-	init16(&Heart5, (u8*)HeartsTiles);
-	dmaCopy(HeartsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],HeartsPalLen);
-
-	init16(&Food1, (u8*)HungerTiles);
-	dmaCopy(HungerPal, &VRAM_F_EXT_SPR_PALETTE[1][0],HungerPalLen);
-	init16(&Food2, (u8*)HungerTiles);
-	dmaCopy(HungerPal, &VRAM_F_EXT_SPR_PALETTE[1][0],HungerPalLen);
-	init16(&Food3, (u8*)HungerTiles);
-	dmaCopy(HungerPal, &VRAM_F_EXT_SPR_PALETTE[1][0],HungerPalLen);
-	init16(&Food4, (u8*)HungerTiles);
-	dmaCopy(HungerPal, &VRAM_F_EXT_SPR_PALETTE[1][0],HungerPalLen);
-	init16(&Food5, (u8*)HungerTiles);
-	dmaCopy(HungerPal, &VRAM_F_EXT_SPR_PALETTE[1][0],HungerPalLen);
-
+	//Set F Bank.
 	vramSetBankF(VRAM_F_SPRITE_EXT_PALETTE);
 
+	//Set I Bank.
+	vramSetBankI(VRAM_I_LCD);
+	//Hearts
+	init16Sub(&Heart1, (u8*)HeartsTiles);
+	dmaCopy(HeartsPal, &VRAM_I_EXT_SPR_PALETTE[0][0],HeartsPalLen);
+	init16Sub(&Heart2, (u8*)HeartsTiles);
+	dmaCopy(HeartsPal, &VRAM_I_EXT_SPR_PALETTE[0][0],HeartsPalLen);
+	init16Sub(&Heart3, (u8*)HeartsTiles);
+	dmaCopy(HeartsPal, &VRAM_I_EXT_SPR_PALETTE[0][0],HeartsPalLen);
+	init16Sub(&Heart4, (u8*)HeartsTiles);
+	dmaCopy(HeartsPal, &VRAM_I_EXT_SPR_PALETTE[0][0],HeartsPalLen);
+	init16Sub(&Heart5, (u8*)HeartsTiles);
+	dmaCopy(HeartsPal, &VRAM_I_EXT_SPR_PALETTE[0][0],HeartsPalLen);
+	//Food
+	init16Sub(&Food1, (u8*)HungerTiles);
+	dmaCopy(HungerPal, &VRAM_I_EXT_SPR_PALETTE[1][0],HungerPalLen);
+	init16Sub(&Food2, (u8*)HungerTiles);
+	dmaCopy(HungerPal, &VRAM_I_EXT_SPR_PALETTE[1][0],HungerPalLen);
+	init16Sub(&Food3, (u8*)HungerTiles);
+	dmaCopy(HungerPal, &VRAM_I_EXT_SPR_PALETTE[1][0],HungerPalLen);
+	init16Sub(&Food4, (u8*)HungerTiles);
+	dmaCopy(HungerPal, &VRAM_I_EXT_SPR_PALETTE[1][0],HungerPalLen);
+	init16Sub(&Food5, (u8*)HungerTiles);
+	dmaCopy(HungerPal, &VRAM_I_EXT_SPR_PALETTE[1][0],HungerPalLen);
+	//Set I Bank.
+	vramSetBankI(VRAM_I_SUB_SPRITE_EXT_PALETTE);
+
+	//Title screen background.
 	int bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
 	dmaCopy(StartBitmap, bgGetGfxPtr(bg3), 256*192);
 	dmaCopy(StartPal, BG_PALETTE, 256*2);
-		
-	//Make the bottom screen a blue color
-	setBackdropColorSub(5555000000009999);
+	//Bottom Screen
+	//bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+	//dmaCopy(StartBitmap, bgGetGfxPtr(bg3), 256*192);
+	//dmaCopy(StartPal, BG_PALETTE_SUB, 256*2);
 	
 	mmInitDefaultMem((mm_addr)soundbank_bin);
 	
@@ -171,7 +165,7 @@ int main(void) {
 	};
 */	
 
-	consoleDemoInit();
+	//consoleDemoInit();
 
 	//Loops every frame
 	while(1) {
@@ -342,28 +336,33 @@ int main(void) {
 				Pet = MoveActor(goingX, Pet.Ypos, Pet);
 			}
 
+			if(pressed & KEY_A){
+				Hunger++;
+				HungerFrame = -1;
+			}
+
 			//Set the sprites
 			oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Pet.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamMain, 1, Heart1.Xpos, Heart1.Ypos, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamSub, 0, Heart1.Xpos, Heart1.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Heart1.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamMain, 2, Heart2.Xpos, Heart2.Ypos, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamSub, 1, Heart2.Xpos, Heart2.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Heart2.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamMain, 3, Heart3.Xpos, Heart3.Ypos, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamSub, 2, Heart3.Xpos, Heart3.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Heart3.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamMain, 4, Heart4.Xpos, Heart4.Ypos, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamSub, 3, Heart4.Xpos, Heart4.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Heart4.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamMain, 5, Heart5.Xpos, Heart5.Ypos, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamSub, 4, Heart5.Xpos, Heart5.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Heart5.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamMain, 6, Food1.Xpos, Food1.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamSub, 5, Food1.Xpos, Food1.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Food1.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamMain, 7, Food2.Xpos, Food2.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamSub, 6, Food2.Xpos, Food2.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Food2.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamMain, 8, Food3.Xpos, Food3.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamSub, 7, Food3.Xpos, Food3.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Food3.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamMain, 9, Food4.Xpos, Food4.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamSub, 8, Food4.Xpos, Food4.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Food4.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamMain, 10, Food5.Xpos, Food5.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamSub, 9, Food5.Xpos, Food5.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Food5.sprite_gfx_mem, -1, false, false, false, false, false);
 
 			//Increase the variables.
@@ -384,7 +383,8 @@ int main(void) {
 			}
 		}
 
-		//Update the OAM.
+		//Update the OAMs.
 		oamUpdate(&oamMain);
+		oamUpdate(&oamSub);
 	}
 }
