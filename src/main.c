@@ -300,36 +300,49 @@ int main(void) {
 		int goingX;
 
 		if(GameStart == true){
-			oamClear(&oamMain, 0, 127);
+			//oamClear(&oamMain, 0, 127);
 
 			//Movement
 			if(MovementFrame >= 100){
+				//Reset the "MovementFrame" variable.
 				MovementFrame = -1;
+				//Choose where to move.
 				isGoing = false;
 			}
 
 			//Health & Hunger
 			if(HungerFrame >= 500){
+				//If fully hungry.
 				if(Hunger == 0){
+					//If has been hungry long enough to lose a life.
 					if(HungerFrame >= 700){
+						//Lose a life.
 						Health--;
+						//Reset the "HungerFrame" variable.
 						HungerFrame = -1;
 					}
 				}
 				else{
+					//Lose one hunger.
 					Hunger--;
+					//Reset the "HungerFrame" variable.
 					HungerFrame = -1;
 				}
 			}
 
+			//If you can move, move. Else, choose random spot to move to.
 			if(isGoing == false){
+				//Get random X position to move to.
 				goingX = rand() % 240;
+				//Can start moving.
 				isGoing = true;
 			}
 			else{
+				//Move the "Pet".
 				Pet = MoveActor(goingX, Pet.Ypos, Pet);
 			}
 
+			//Set the sprites
 			oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Pet.sprite_gfx_mem, -1, false, false, false, false, false);
 			oamSet(&oamMain, 1, Heart1.Xpos, Heart1.Ypos, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
@@ -353,18 +366,25 @@ int main(void) {
 			oamSet(&oamMain, 10, Food5.Xpos, Food5.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Food5.sprite_gfx_mem, -1, false, false, false, false, false);
 
+			//Increase the variables.
 			HungerFrame++;
 			MovementFrame++;
 		}
+
+		//If on the title screen.
 		if(GameStart == false){
+			//If you press start.
 			if(pressed & KEY_START){
+				//Change the background.
 				bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
 				dmaCopy(GameBitmap, bgGetGfxPtr(bg3), 256*192);
 				dmaCopy(GamePal, BG_PALETTE, 256*2);
+				//Start the game.
 				GameStart = true;
 			}
 		}
 
+		//Update the OAM.
 		oamUpdate(&oamMain);
 	}
 }
