@@ -22,6 +22,8 @@ volatile int MovementFrame = 0;
 int MovementFrameNum = 0;
 int Hunger = 5;
 int Health = 5;
+int MaxHealth = 5;
+int GetHealth = 0;
 
 enum { CONTINUOUS, SINGLE } TouchType = CONTINUOUS;
 
@@ -181,115 +183,8 @@ int main(void) {
 		int held = keysHeld();
 		int released = keysUp();
 
-		if(Health == 5){
-			Heart5.anim_frame = 0;
-			Heart4.anim_frame = 0;
-			Heart3.anim_frame = 0;
-			Heart2.anim_frame = 0;
-			Heart1.anim_frame = 0;
-		}
-		if(Health == 4){
-			Heart5.anim_frame = 1;
-			Heart4.anim_frame = 0;
-			Heart3.anim_frame = 0;
-			Heart2.anim_frame = 0;
-			Heart1.anim_frame = 0;
-		}
-		if(Health == 3){
-			Heart5.anim_frame = 1;
-			Heart4.anim_frame = 1;
-			Heart3.anim_frame = 0;
-			Heart2.anim_frame = 0;
-			Heart1.anim_frame = 0;
-		}
-		if(Health == 2){
-			Heart5.anim_frame = 1;
-			Heart4.anim_frame = 1;
-			Heart3.anim_frame = 1;
-			Heart2.anim_frame = 0;
-			Heart1.anim_frame = 0;
-		}
-		if(Health == 1){
-			Heart5.anim_frame = 1;
-			Heart4.anim_frame = 1;
-			Heart3.anim_frame = 1;
-			Heart2.anim_frame = 1;
-			Heart1.anim_frame = 0;
-		}
-		if(Health <= 0){
-			Heart5.anim_frame = 1;
-			Heart4.anim_frame = 1;
-			Heart3.anim_frame = 1;
-			Heart2.anim_frame = 1;
-			Heart1.anim_frame = 1;
-			GameStart = false;
-		}
-
-		if(Hunger == 5){
-			Food5.anim_frame = 0;
-			Food4.anim_frame = 0;
-			Food3.anim_frame = 0;
-			Food2.anim_frame = 0;
-			Food1.anim_frame = 0;
-		}
-		if(Hunger == 4){
-			Food5.anim_frame = 1;
-			Food4.anim_frame = 0;
-			Food3.anim_frame = 0;
-			Food2.anim_frame = 0;
-			Food1.anim_frame = 0;
-		}
-		if(Hunger == 3){
-			Food5.anim_frame = 1;
-			Food4.anim_frame = 1;
-			Food3.anim_frame = 0;
-			Food2.anim_frame = 0;
-			Food1.anim_frame = 0;
-		}
-		if(Hunger == 2){
-			Food5.anim_frame = 1;
-			Food4.anim_frame = 1;
-			Food3.anim_frame = 1;
-			Food2.anim_frame = 0;
-			Food1.anim_frame = 0;
-		}
-		if(Hunger == 1){
-			Food5.anim_frame = 1;
-			Food4.anim_frame = 1;
-			Food3.anim_frame = 1;
-			Food2.anim_frame = 1;
-			Food1.anim_frame = 0;
-		}
-		if(Hunger <= 0){
-			Food5.anim_frame = 1;
-			Food4.anim_frame = 1;
-			Food3.anim_frame = 1;
-			Food2.anim_frame = 1;
-			Food1.anim_frame = 1;
-			//GameStart = false;
-		}
-
 		PetBox.Xpos = Pet.Xpos + PetBox.OffsetX;
 		PetBox.Ypos = Pet.Ypos + PetBox.OffsetY;
-
-		animate16(&Pet);
-		animate32(&Food1);
-		animate32(&Food2);
-		animate32(&Food3);
-		animate32(&Food4);
-		animate32(&Food5);
-
-		animate16(&Heart1);
-		animate16(&Heart2);
-		animate16(&Heart3);
-		animate16(&Heart4);
-		animate16(&Heart5);
-
-		animate16(&Food1);
-		animate16(&Food2);
-		animate16(&Food3);
-		animate16(&Food4);
-		animate16(&Food5);
 
 		bool isGoing;
 		int goingX;
@@ -297,8 +192,25 @@ int main(void) {
 		if(GameStart == true){
 			//oamClear(&oamMain, 0, 127);
 
+			//If "Health" is less than "MaxHealth" and "Health" is not equal to 0.
+			if(Health < MaxHealth && Health != 0){
+				//If "Hunger" is equal to 5.
+				if(Hunger == 5){
+					//"GetHealth" + 1.
+					GetHealth++;
+					//If "GeatHealth" is greater than or equal to 200.
+					if(GetHealth >= 200){
+						//Reset "GetHealth" variable.
+						GetHealth = 0;
+						//Health + 1.
+						Health++;
+					}
+				}
+			}
+
 			//Movement
 			if(MovementFrame >= MovementFrameNum){
+				//Set the random variable.
 				MovementFrameNum = rand() % 100;
 				//Reset the "MovementFrame" variable.
 				MovementFrame = -1;
@@ -338,10 +250,121 @@ int main(void) {
 				Pet = MoveActor(goingX, Pet.Ypos, Pet);
 			}
 
+			//WIP feeding system.
 			if(pressed & KEY_A){
-				Hunger++;
-				HungerFrame = -1;
+				if(Health != 0 && Health != MaxHealth){
+					Hunger++;
+					HungerFrame = -1;
+				}
 			}
+
+			//Update the hunger and health.
+			if(Health == 5){
+				Heart5.anim_frame = 0;
+				Heart4.anim_frame = 0;
+				Heart3.anim_frame = 0;
+				Heart2.anim_frame = 0;
+				Heart1.anim_frame = 0;
+			}
+			else if(Health == 4){
+				Heart5.anim_frame = 1;
+				Heart4.anim_frame = 0;
+				Heart3.anim_frame = 0;
+				Heart2.anim_frame = 0;
+				Heart1.anim_frame = 0;
+			}
+			else if(Health == 3){
+				Heart5.anim_frame = 1;
+				Heart4.anim_frame = 1;
+				Heart3.anim_frame = 0;
+				Heart2.anim_frame = 0;
+				Heart1.anim_frame = 0;
+			}
+			else if(Health == 2){
+				Heart5.anim_frame = 1;
+				Heart4.anim_frame = 1;
+				Heart3.anim_frame = 1;
+				Heart2.anim_frame = 0;
+				Heart1.anim_frame = 0;
+			}
+			else if(Health == 1){
+				Heart5.anim_frame = 1;
+				Heart4.anim_frame = 1;
+				Heart3.anim_frame = 1;
+				Heart2.anim_frame = 1;
+				Heart1.anim_frame = 0;
+			}
+			else if(Health <= 0){
+				Heart5.anim_frame = 1;
+				Heart4.anim_frame = 1;
+				Heart3.anim_frame = 1;
+				Heart2.anim_frame = 1;
+				Heart1.anim_frame = 1;
+				GameStart = false;
+			}
+			if(Hunger == 5){
+				Food5.anim_frame = 0;
+				Food4.anim_frame = 0;
+				Food3.anim_frame = 0;
+				Food2.anim_frame = 0;
+				Food1.anim_frame = 0;
+			}
+			else if(Hunger == 4){
+				Food5.anim_frame = 1;
+				Food4.anim_frame = 0;
+				Food3.anim_frame = 0;
+				Food2.anim_frame = 0;
+				Food1.anim_frame = 0;
+			}
+			else if(Hunger == 3){
+				Food5.anim_frame = 1;
+				Food4.anim_frame = 1;
+				Food3.anim_frame = 0;
+				Food2.anim_frame = 0;
+				Food1.anim_frame = 0;
+			}
+			else if(Hunger == 2){
+				Food5.anim_frame = 1;
+				Food4.anim_frame = 1;
+				Food3.anim_frame = 1;
+				Food2.anim_frame = 0;
+				Food1.anim_frame = 0;
+			}
+			else if(Hunger == 1){
+				Food5.anim_frame = 1;
+				Food4.anim_frame = 1;
+				Food3.anim_frame = 1;
+				Food2.anim_frame = 1;
+				Food1.anim_frame = 0;
+			}
+			else if(Hunger <= 0){
+				Food5.anim_frame = 1;
+				Food4.anim_frame = 1;
+				Food3.anim_frame = 1;
+				Food2.anim_frame = 1;
+				Food1.anim_frame = 1;
+				//GameStart = false;
+			}
+
+			//Animate Sprites.
+			animate16(&Pet);
+			animate32(&Food1);
+			animate32(&Food2);
+			animate32(&Food3);
+			animate32(&Food4);
+			animate32(&Food5);
+
+			animate16(&Heart1);
+			animate16(&Heart2);
+			animate16(&Heart3);
+			animate16(&Heart4);
+			animate16(&Heart5);
+
+			animate16(&Food1);
+			animate16(&Food2);
+			animate16(&Food3);
+			animate16(&Food4);
+			animate16(&Food5);
 
 			//Set the sprites
 			oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 

@@ -8,7 +8,7 @@ endif
 
 # These set the information text in the nds file
 GAME_TITLE     := DS Virtual Pet
-GAME_SUBTITLE1 := MakeYourDSGame & BowersIndustry
+GAME_SUBTITLE1 := Make Your DS Game
 #GAME_SUBTITLE2 := 
 
 include $(DEVKITARM)/ds_rules
