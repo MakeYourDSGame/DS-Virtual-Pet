@@ -19,6 +19,7 @@ SpriteEntry OAMCopy[128];
 
 volatile int HungerFrame = 0;
 volatile int MovementFrame = 0;
+int MovementFrameNum = 0;
 int Hunger = 5;
 int Health = 5;
 
@@ -297,7 +298,8 @@ int main(void) {
 			//oamClear(&oamMain, 0, 127);
 
 			//Movement
-			if(MovementFrame >= 100){
+			if(MovementFrame >= MovementFrameNum){
+				MovementFrameNum = rand() % 100;
 				//Reset the "MovementFrame" variable.
 				MovementFrame = -1;
 				//Choose where to move.
