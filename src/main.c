@@ -6,7 +6,9 @@
 SpriteEntry OAMCopy[128];
 
 #include <Start.h>
+#include <BottomStart.h>
 #include <Game.h>
+#include <BottomGame.h>
 #include <Pet16.h>
 #include <Enemy.h>
 #include <Hearts.h>
@@ -142,9 +144,9 @@ int main(void) {
 	dmaCopy(StartBitmap, bgGetGfxPtr(bg3), 256*192);
 	dmaCopy(StartPal, BG_PALETTE, 256*2);
 	//Bottom Screen
-	//bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
-	//dmaCopy(StartBitmap, bgGetGfxPtr(bg3), 256*192);
-	//dmaCopy(StartPal, BG_PALETTE_SUB, 256*2);
+	bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+	dmaCopy(BottomStartBitmap, bgGetGfxPtr(bg3), 256*192);
+	dmaCopy(BottomStartPal, BG_PALETTE_SUB, 256*2);
 	
 	mmInitDefaultMem((mm_addr)soundbank_bin);
 	
@@ -257,6 +259,8 @@ int main(void) {
 					HungerFrame = -1;
 				}
 			}
+
+			//---------------------------------------------------------------------------------------------------------------------------
 
 			//Update the hunger and health.
 			if(Health == 5){
@@ -399,10 +403,14 @@ int main(void) {
 		if(GameStart == false){
 			//If you press start.
 			if(pressed & KEY_START){
-				//Change the background.
+				//Change the backgrounds.
 				bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
 				dmaCopy(GameBitmap, bgGetGfxPtr(bg3), 256*192);
 				dmaCopy(GamePal, BG_PALETTE, 256*2);
+
+				bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+				dmaCopy(BottomGameBitmap, bgGetGfxPtr(bg3), 256*192);
+				dmaCopy(BottomGamePal, BG_PALETTE_SUB, 256*2);
 				//Start the game.
 				GameStart = true;
 			}
