@@ -13,6 +13,7 @@ SpriteEntry OAMCopy[128];
 #include <Enemy.h>
 #include <Hearts.h>
 #include <Hunger.h>
+#include <Sick.h>
 
 #include "soundbank.h"
 #include "soundbank_bin.h"
@@ -22,10 +23,15 @@ SpriteEntry OAMCopy[128];
 volatile int HungerFrame = 0;
 volatile int MovementFrame = 0;
 int MovementFrameNum = 0;
+int TimeBetweenFrames = 25;
+int TimeBetweenFramesDone = 0;
+int SickFrames = 0;
+
 int Hunger = 5;
 int Health = 5;
 int MaxHealth = 5;
 int GetHealth = 0;
+bool isSick = false;
 
 enum { CONTINUOUS, SINGLE } TouchType = CONTINUOUS;
 
@@ -40,7 +46,7 @@ int main(void) {
 	//Create Foods
 	Sprite Pet = {0,0};
 	Pet.Xpos = 50;
-	Pet.Ypos = 134;
+	Pet.Ypos = 140;
 
 	Sprite Food1 = {0,0};
 	Food1.Xpos = 0;
@@ -81,6 +87,10 @@ int main(void) {
 	Sprite Heart5 = {0,0};
 	Heart5.Xpos = 64;
 	Heart5.Ypos = 0;
+
+	Sprite Effect = {0,0};
+	Effect.Xpos = 0;
+	Effect.Ypos = 32;
 	
 	//Set Up Collision Boxes
 	Box PetBox;
@@ -107,7 +117,7 @@ int main(void) {
 	//Set F Bank.
 	vramSetBankF(VRAM_F_LCD);
 	//Pet
-	init16(&Pet, (u8*)Pet16Tiles);
+	init32(&Pet, (u8*)Pet16Tiles);
 	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
 	//Set F Bank.
 	vramSetBankF(VRAM_F_SPRITE_EXT_PALETTE);
@@ -136,6 +146,9 @@ int main(void) {
 	dmaCopy(HungerPal, &VRAM_I_EXT_SPR_PALETTE[1][0],HungerPalLen);
 	init16Sub(&Food5, (u8*)HungerTiles);
 	dmaCopy(HungerPal, &VRAM_I_EXT_SPR_PALETTE[1][0],HungerPalLen);
+	//Sick
+	init16Sub(&Effect, (u8*)SickTiles);
+	dmaCopy(SickPal, &VRAM_I_EXT_SPR_PALETTE[2][0],SickPalLen);
 	//Set I Bank.
 	vramSetBankI(VRAM_I_SUB_SPRITE_EXT_PALETTE);
 
@@ -239,6 +252,26 @@ int main(void) {
 					HungerFrame = -1;
 				}
 			}
+			else if(isSick == true){
+					if(HungerFrame >= 250){
+						//If fully hungry.
+					if(Hunger == 0){
+						//If has been hungry long enough to lose a life.
+						if(HungerFrame >= 700){
+							//Lose a life.
+							Health--;
+							//Reset the "HungerFrame" variable.
+							HungerFrame = -1;
+						}
+					}
+					else{
+						//Lose one hunger.
+						Hunger--;
+						//Reset the "HungerFrame" variable.
+						HungerFrame = -1;
+					}
+				}
+			}
 
 			//If you can move, move. Else, choose random spot to move to.
 			if(isGoing == false){
@@ -252,12 +285,44 @@ int main(void) {
 				Pet = MoveActor(goingX, Pet.Ypos, Pet);
 			}
 
+			if(SickFrames >= 800){
+				if(isSick == false){
+					int GetSick = rand() % 100;
+					if(Hunger <= 1){
+						if(GetSick < 35){
+							isSick = true;
+						}
+					}
+					else if(Hunger < 4){
+						if(GetSick < 25){
+							isSick = true;
+						}
+					}
+					else{
+						if(GetSick < 10){
+							isSick = true;
+						}
+					}
+					SickFrames = -1;
+				}
+			}
+			if(isSick == true){
+				if(SickFrames >= 500){
+					if(Health > 0){
+						Health--;
+					}
+					SickFrames = -1;
+				}
+			}
+			SickFrames++;
+
 			//WIP feeding system.
 			if(pressed & KEY_A){
-				if(Health != 0 && Health != MaxHealth){
-					Hunger++;
-					HungerFrame = -1;
-				}
+				Feed();
+			}
+
+			if(pressed & KEY_B){
+				Heal();
 			}
 
 			//---------------------------------------------------------------------------------------------------------------------------
@@ -349,9 +414,24 @@ int main(void) {
 				Food1.anim_frame = 1;
 				//GameStart = false;
 			}
+			if(isSick == true){
+				Effect.anim_frame = 1;
+			}
+			else{
+				Effect.anim_frame = 0;
+			}
+
+			TimeBetweenFramesDone++;
+			if(TimeBetweenFramesDone >= TimeBetweenFrames){
+				TimeBetweenFramesDone = 0;
+				Pet.anim_frame++;
+				if(Pet.anim_frame == FRAMES_PER_ANIMATION){
+					Pet.anim_frame = 0;
+				}
+			}
 
 			//Animate Sprites.
-			animate16(&Pet);
+			animate32(&Pet);
 			animate32(&Food1);
 			animate32(&Food2);
 			animate32(&Food3);
@@ -370,8 +450,10 @@ int main(void) {
 			animate16(&Food4);
 			animate16(&Food5);
 
+			animate16(&Effect);
+
 			//Set the sprites
-			oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
+			oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
 				Pet.sprite_gfx_mem, -1, false, false, false, false, false);
 			oamSet(&oamSub, 0, Heart1.Xpos, Heart1.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Heart1.sprite_gfx_mem, -1, false, false, false, false, false);
@@ -393,6 +475,8 @@ int main(void) {
 				Food4.sprite_gfx_mem, -1, false, false, false, false, false);
 			oamSet(&oamSub, 9, Food5.Xpos, Food5.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Food5.sprite_gfx_mem, -1, false, false, false, false, false);
+			oamSet(&oamSub, 10, Effect.Xpos, Effect.Ypos, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+				Effect.sprite_gfx_mem, -1, false, false, false, false, false);
 
 			//Increase the variables.
 			HungerFrame++;
@@ -419,5 +503,23 @@ int main(void) {
 		//Update the OAMs.
 		oamUpdate(&oamMain);
 		oamUpdate(&oamSub);
+	}
+}
+
+void Feed(){
+	if(Health != 0 && Health <= MaxHealth){
+		if(Hunger < 5){
+			Hunger++;
+			HungerFrame = -1;
+		}
+	}
+}
+
+void Heal(){
+	if(Health > 0){
+		if(isSick == true){
+			isSick = false;
+			SickFrames = 0;
+		}
 	}
 }

@@ -2,9 +2,9 @@
 #include <nds.h>
 
 //Animation Frame Variables
-#define FRAMES_PER_ANIMATION 3
+#define FRAMES_PER_ANIMATION 2
 //Animation States
-enum SpriteState {W_Walk_Up = 0, W_Walk_Down = 1, W_Walk_Right = 2, W_Walk_Left = 3};
+enum SpriteState {W_Walk_Left = 0, W_Walk_Right = 1, W_Walk_Up = 2, W_Walk_Down = 3};
 
 //Objects
 typedef struct 
@@ -45,16 +45,20 @@ Sprite MoveActor(int Xpos, int Ypos, Sprite object){
 	Go_Down = false;
 	
 	if(object.Xpos < Xpos){
+		object.state = W_Walk_Right;
 		Go_Right = true;
 	}
 	else if(object.Xpos > Xpos){
+		object.state = W_Walk_Left;
 		Go_Left = true;
 	}
 
 	if(object.Ypos < Ypos){
+		object.state = W_Walk_Down;
 		Go_Down = true;
 	}
 	else if(object.Ypos > Ypos){
+		object.state = W_Walk_Up;
 		Go_Up = true;
 	}
 
