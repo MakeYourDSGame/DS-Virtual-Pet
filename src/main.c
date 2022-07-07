@@ -5,15 +5,20 @@
 
 SpriteEntry OAMCopy[128];
 
+//Backgrounds
 #include <Start.h>
 #include <BottomStart.h>
 #include <Game.h>
 #include <BottomGame.h>
+#include <Store.h>
+
+//Sprites
 #include <Pet16.h>
 #include <Enemy.h>
 #include <Hearts.h>
 #include <Hunger.h>
 #include <Sick.h>
+#include <Numbers.h>
 
 #include "soundbank.h"
 #include "soundbank_bin.h"
@@ -27,11 +32,13 @@ int TimeBetweenFrames = 25;
 int TimeBetweenFramesDone = 0;
 int SickFrames = 0;
 
+int Coins = 100;
 int Hunger = 5;
 int Health = 5;
 int MaxHealth = 5;
 int GetHealth = 0;
 bool isSick = false;
+bool StoreOpen = false;
 
 enum { CONTINUOUS, SINGLE } TouchType = CONTINUOUS;
 
@@ -91,6 +98,10 @@ int main(void) {
 	Sprite Effect = {0,0};
 	Effect.Xpos = 0;
 	Effect.Ypos = 32;
+
+	Sprite Ones = {0,0};
+	Sprite Tens = {0,0};
+	Sprite Hunds = {0,0};
 	
 	//Set Up Collision Boxes
 	Box PetBox;
@@ -100,6 +111,42 @@ int main(void) {
 	PetBox.Ypos = PetBox.Ypos + PetBox.OffsetY;
 	PetBox.SizeX = 16;
 	PetBox.SizeY = 16;
+
+	Box TouchBox;
+	TouchBox.SizeX = 1;
+	TouchBox.SizeY = 1;
+	TouchBox.Xpos = -20;
+	TouchBox.Ypos = -20;
+
+	Box FoodButton1;
+	FoodButton1.SizeX = 48;
+	FoodButton1.SizeY = 24;
+	FoodButton1.Xpos = 57;
+	FoodButton1.Ypos = 64;
+
+	Box FoodButton2;
+	FoodButton2.SizeX = 48;
+	FoodButton2.SizeY = 24;
+	FoodButton2.Xpos = 153;
+	FoodButton2.Ypos = 64;
+
+	Box FoodButton3;
+	FoodButton3.SizeX = 48;
+	FoodButton3.SizeY = 24;
+	FoodButton3.Xpos = 16;
+	FoodButton3.Ypos = 117;
+
+	Box FoodButton4;
+	FoodButton4.SizeX = 48;
+	FoodButton4.SizeY = 24;
+	FoodButton4.Xpos = 105;
+	FoodButton4.Ypos = 117;
+
+	Box FoodButton5;
+	FoodButton5.SizeX = 48;
+	FoodButton5.SizeY = 24;
+	FoodButton5.Xpos = 193;
+	FoodButton5.Ypos = 117;
 
 	bool GameStart = false;
 
@@ -149,6 +196,13 @@ int main(void) {
 	//Sick
 	init16Sub(&Effect, (u8*)SickTiles);
 	dmaCopy(SickPal, &VRAM_I_EXT_SPR_PALETTE[2][0],SickPalLen);
+	//Numbers
+	init16Sub(&Ones, (u8*)NumbersTiles);
+	dmaCopy(NumbersM_I_EXT_SPR_PALETTE[3][0],NumbersPalLen);
+	init16Sub(&Tens, (u8*)NumbersTiles);
+	dmaCopy(NumbersPal, &VRAM_I_EXT_SPR_PALETTE[3][0],NumbersPalLen);
+	init16Sub(&Hunds, (u8*)NumbersTiles);
+	dmaCopy(NumbersPal, &VRAM_I_EXT_SPR_PALETTE[3][0],NumbersPalLen);
 	//Set I Bank.
 	vramSetBankI(VRAM_I_SUB_SPRITE_EXT_PALETTE);
 
@@ -316,6 +370,15 @@ int main(void) {
 			}
 			SickFrames++;
 
+			if(pressed & KEY_TOUCH){
+				TouchBox.Xpos = touch.px;
+				TouchBox.Ypos = touch.py;
+			}
+			else{
+				TouchBox.Xpos = -20;
+				TouchBox.Ypos = -20;
+			}
+
 			//WIP feeding system.
 			if(pressed & KEY_A){
 				Feed();
@@ -323,6 +386,47 @@ int main(void) {
 
 			if(pressed & KEY_B){
 				Heal();
+			}
+
+			if(pressed & KEY_START){
+				if(StoreOpen == false){
+					bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+					dmaCopy(StoreBitmap, bgGetGfxPtr(bg3), 256*192);
+					dmaCopy(StorePal, BG_PALETTE_SUB, 256*2);
+					StoreOpen = true;
+				}
+				else{
+					bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+					dmaCopy(BottomGameBitmap, bgGetGfxPtr(bg3), 256*192);
+					dmaCopy(BottomGamePal, BG_PALETTE_SUB, 256*2);
+					StoreOpen = false;
+				}
+			}
+
+			bool hit = false;
+			hit = CollisionCheck(TouchBox, FoodButton1);
+			if(hit == true){
+				Feed(1);
+			}
+			hit = false;
+			hit = CollisionCheck(TouchBox, FoodButton2);
+			if(hit == true){
+				Feed(2);
+			}
+			hit = false;
+			hit = CollisionCheck(TouchBox, FoodButton3);
+			if(hit == true){
+				Heal(1);
+			}
+			hit = false;
+			hit = CollisionCheck(TouchBox, FoodButton4);
+			if(hit == true){
+				Heal(2);
+			}
+			hit = false;
+			hit = CollisionCheck(TouchBox, FoodButton5);
+			if(hit == true){
+				Heal(3);
 			}
 
 			//---------------------------------------------------------------------------------------------------------------------------
@@ -453,7 +557,7 @@ int main(void) {
 			animate16(&Effect);
 
 			//Set the sprites
-			oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
+			oamSet(&oamMain, 0, Coins, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
 				Pet.sprite_gfx_mem, -1, false, false, false, false, false);
 			oamSet(&oamSub, 0, Heart1.Xpos, Heart1.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Heart1.sprite_gfx_mem, -1, false, false, false, false, false);
@@ -506,20 +610,60 @@ int main(void) {
 	}
 }
 
-void Feed(){
+void Feed(int Num){
 	if(Health != 0 && Health <= MaxHealth){
-		if(Hunger < 5){
-			Hunger++;
-			HungerFrame = -1;
+		
+		if(Num == 1){
+			if(Coins >= 5){
+				if(Hunger < 5){
+					Hunger++;
+					HungerFrame = -1;
+					Coins -= 5;
+				}
+			}
+		}
+		else{
+			if(Coins >= 10){
+				if(Hunger < 4){
+					Hunger += 2;
+					HungerFrame = -1;
+					Coins -= 10;
+				}
+				else{
+					Hunger++;
+					HungerFrame = -1;
+					Coins -= 10;
+				}
+			}
 		}
 	}
 }
 
-void Heal(){
+void Heal(int Num){
 	if(Health > 0){
 		if(isSick == true){
-			isSick = false;
-			SickFrames = 0;
+			if(Coins >= Num * 10){
+				int random = rand() % 100;
+				if(Num == 1){
+					if(random < 21){
+						isSick = false;
+						SickFrames = 0;
+					}
+				}
+				else if(Num == 2){
+					if(random < 51){
+						isSick = false;
+						SickFrames = 0;
+					}
+				}
+				else{
+					if(random < 81){
+						isSick = false;
+						SickFrames = 0;
+					}
+				}
+				Coins -= Num * 10;
+			}
 		}
 	}
 }
