@@ -557,7 +557,7 @@ int main(void) {
 			animate16(&Effect);
 
 			//Set the sprites
-			oamSet(&oamMain, 0, Coins, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
+			oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
 				Pet.sprite_gfx_mem, -1, false, false, false, false, false);
 			oamSet(&oamSub, 0, Heart1.Xpos, Heart1.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Heart1.sprite_gfx_mem, -1, false, false, false, false, false);
