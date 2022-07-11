@@ -33,6 +33,9 @@ int TimeBetweenFramesDone = 0;
 int SickFrames = 0;
 
 int Coins = 100;
+int Place1 = 0;
+int Place2 = 0;
+int Place3 = 0;
 int Hunger = 5;
 int Health = 5;
 int MaxHealth = 5;
@@ -197,11 +200,11 @@ int main(void) {
 	init16Sub(&Effect, (u8*)SickTiles);
 	dmaCopy(SickPal, &VRAM_I_EXT_SPR_PALETTE[2][0],SickPalLen);
 	//Numbers
-	init16Sub(&Ones, (u8*)NumbersTiles);
-	dmaCopy(NumbersM_I_EXT_SPR_PALETTE[3][0],NumbersPalLen);
-	init16Sub(&Tens, (u8*)NumbersTiles);
+	init8Sub(&Ones, (u8*)NumbersTiles);
 	dmaCopy(NumbersPal, &VRAM_I_EXT_SPR_PALETTE[3][0],NumbersPalLen);
-	init16Sub(&Hunds, (u8*)NumbersTiles);
+	init8Sub(&Tens, (u8*)NumbersTiles);
+	dmaCopy(NumbersPal, &VRAM_I_EXT_SPR_PALETTE[3][0],NumbersPalLen);
+	init8Sub(&Hunds, (u8*)NumbersTiles);
 	dmaCopy(NumbersPal, &VRAM_I_EXT_SPR_PALETTE[3][0],NumbersPalLen);
 	//Set I Bank.
 	vramSetBankI(VRAM_I_SUB_SPRITE_EXT_PALETTE);
@@ -431,6 +434,103 @@ int main(void) {
 
 			//---------------------------------------------------------------------------------------------------------------------------
 
+			Place1 = (Coins/100)%10;
+			Place2 = (Coins/10)%10;
+			Place3 = (Coins/1)%10;
+
+			if(Place1 == 0){
+				Hunds.anim_frame = 0;
+			}
+			else if(Place1 == 1){
+				Hunds.anim_frame = 1;
+			}
+			else if(Place1 == 2){
+				Hunds.anim_frame = 2;
+			}
+			else if(Place1 == 3){
+				Hunds.anim_frame = 3;
+			}
+			else if(Place1 == 4){
+				Hunds.anim_frame = 4;
+			}
+			else if(Place1 == 5){
+				Hunds.anim_frame = 5;
+			}
+			else if(Place1 == 6){
+				Hunds.anim_frame = 6;
+			}
+			else if(Place1 == 7){
+				Hunds.anim_frame = 7;
+			}
+			else if(Place1 == 8){
+				Hunds.anim_frame = 8;
+			}
+			else if(Place1 == 9){
+				Hunds.anim_frame = 9;
+			}
+
+			if(Place2 == 0){
+				Tens.anim_frame = 0;
+			}
+			else if(Place2 == 1){
+				Tens.anim_frame = 1;
+			}
+			else if(Place2 == 2){
+				Tens.anim_frame = 2;
+			}
+			else if(Place2 == 3){
+				Tens.anim_frame = 3;
+			}
+			else if(Place2 == 4){
+				Tens.anim_frame = 4;
+			}
+			else if(Place2 == 5){
+				Tens.anim_frame = 5;
+			}
+			else if(Place2 == 6){
+				Tens.anim_frame = 6;
+			}
+			else if(Place2 == 7){
+				Tens.anim_frame = 7;
+			}
+			else if(Place2 == 8){
+				Tens.anim_frame = 8;
+			}
+			else if(Place2 == 9){
+				Tens.anim_frame = 9;
+			}
+
+			if(Place3 == 0){
+				Ones.anim_frame = 0;
+			}
+			else if(Place3 == 1){
+				Ones.anim_frame = 1;
+			}
+			else if(Place3 == 2){
+				Ones.anim_frame = 2;
+			}
+			else if(Place3 == 3){
+				Ones.anim_frame = 3;
+			}
+			else if(Place3 == 4){
+				Ones.anim_frame = 4;
+			}
+			else if(Place3 == 5){
+				Ones.anim_frame = 5;
+			}
+			else if(Place3 == 6){
+				Ones.anim_frame = 6;
+			}
+			else if(Place3 == 7){
+				Ones.anim_frame = 7;
+			}
+			else if(Place3 == 8){
+				Ones.anim_frame = 8;
+			}
+			else if(Place3 == 9){
+				Ones.anim_frame = 9;
+			}
+
 			//Update the hunger and health.
 			if(Health == 5){
 				Heart5.anim_frame = 0;
@@ -556,6 +656,10 @@ int main(void) {
 
 			animate16(&Effect);
 
+			animate8(&Ones);
+			animate8(&Tens);
+			animate8(&Hunds);
+
 			//Set the sprites
 			oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
 				Pet.sprite_gfx_mem, -1, false, false, false, false, false);
@@ -581,6 +685,12 @@ int main(void) {
 				Food5.sprite_gfx_mem, -1, false, false, false, false, false);
 			oamSet(&oamSub, 10, Effect.Xpos, Effect.Ypos, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
 				Effect.sprite_gfx_mem, -1, false, false, false, false, false);
+			oamSet(&oamSub, 11, 236, 25, 0, 3, SpriteSize_8x8, SpriteColorFormat_256Color, 
+				Ones.sprite_gfx_mem, -1, false, false, false, false, false);
+			oamSet(&oamSub, 12, 228, 25, 0, 3, SpriteSize_8x8, SpriteColorFormat_256Color, 
+				Tens.sprite_gfx_mem, -1, false, false, false, false, false);
+			oamSet(&oamSub, 13, 220, 25, 0, 3, SpriteSize_8x8, SpriteColorFormat_256Color, 
+				Hunds.sprite_gfx_mem, -1, false, false, false, false, false);
 
 			//Increase the variables.
 			HungerFrame++;
