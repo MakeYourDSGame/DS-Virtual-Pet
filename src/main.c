@@ -10,7 +10,9 @@ SpriteEntry OAMCopy[128];
 #include <BottomStart.h>
 #include <Game.h>
 #include <BottomGame.h>
-#include <Store.h>
+#include <BattleMenu.h>
+
+#include <BattleBottom.h>
 
 //Sprites
 #include <Pet16.h>
@@ -41,7 +43,28 @@ int Health = 5;
 int MaxHealth = 5;
 int GetHealth = 0;
 bool isSick = false;
-bool StoreOpen = false;
+bool BattleMenuOpen = false;
+bool isInBattle = false;
+bool GameStart = false;
+
+int battleState = 0;
+/*
+0 = Player's Turn
+1 = Enemy's turn
+2 = Player Won
+3 = Player Lost
+*/
+int PlayersChoice = 0;
+/*
+0 = Null
+1 = Rock
+2 = Scissors
+3 = Paper
+*/
+int BattleEnemyHealth;
+int BattlePlayerHealth;
+
+int bg3;
 
 enum { CONTINUOUS, SINGLE } TouchType = CONTINUOUS;
 
@@ -53,11 +76,12 @@ void Vblank() {
 int main(void) {
 //---------------------------------------------------------------------------------
 
-	//Create Foods
+	//Create Pet
 	Sprite Pet = {0,0};
 	Pet.Xpos = 50;
 	Pet.Ypos = 140;
 
+	//Create Foods
 	Sprite Food1 = {0,0};
 	Food1.Xpos = 0;
 	Food1.Ypos = 16;
@@ -105,6 +129,10 @@ int main(void) {
 	Sprite Ones = {0,0};
 	Sprite Tens = {0,0};
 	Sprite Hunds = {0,0};
+
+	Sprite Enem = {0,0};
+	Enem.Xpos = 198;
+	Enem.Ypos = 140;
 	
 	//Set Up Collision Boxes
 	Box PetBox;
@@ -151,7 +179,23 @@ int main(void) {
 	FoodButton5.Xpos = 193;
 	FoodButton5.Ypos = 117;
 
-	bool GameStart = false;
+	Box BattleButton1;
+	BattleButton1.SizeX = 48;
+	BattleButton1.SizeY = 24;
+	BattleButton1.Xpos = 105;
+	BattleButton1.Ypos = 53;
+
+	Box BattleButton2;
+	BattleButton2.SizeX = 48;
+	BattleButton2.SizeY = 24;
+	BattleButton2.Xpos = 105;
+	BattleButton2.Ypos = 101;
+
+	Box BattleButton3;
+	BattleButton3.SizeX = 48;
+	BattleButton3.SizeY = 24;
+	BattleButton3.Xpos = 105;
+	BattleButton3.Ypos = 149;
 
 	//Touch Position
 	touchPosition touch;
@@ -169,6 +213,9 @@ int main(void) {
 	//Pet
 	init32(&Pet, (u8*)Pet16Tiles);
 	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
+	//Enemy
+	init32(&Enem, (u8*)EnemyTiles);
+	dmaCopy(EnemyPal, &VRAM_F_EXT_SPR_PALETTE[1][0],EnemyPalLen);
 	//Set F Bank.
 	vramSetBankF(VRAM_F_SPRITE_EXT_PALETTE);
 
@@ -210,7 +257,7 @@ int main(void) {
 	vramSetBankI(VRAM_I_SUB_SPRITE_EXT_PALETTE);
 
 	//Title screen background.
-	int bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+	bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
 	dmaCopy(StartBitmap, bgGetGfxPtr(bg3), 256*192);
 	dmaCopy(StartPal, BG_PALETTE, 256*2);
 	//Bottom Screen
@@ -238,9 +285,7 @@ int main(void) {
 		255,	// volume
 		0,		// panning
 	};
-*/	
-
-	//consoleDemoInit();
+*/
 
 	//Loops every frame
 	while(1) {
@@ -262,8 +307,6 @@ int main(void) {
 		int goingX;
 
 		if(GameStart == true){
-			//oamClear(&oamMain, 0, 127);
-
 			//If "Health" is less than "MaxHealth" and "Health" is not equal to 0.
 			if(Health < MaxHealth && Health != 0){
 				//If "Hunger" is equal to 5.
@@ -382,61 +425,71 @@ int main(void) {
 				TouchBox.Ypos = -20;
 			}
 
-			//WIP feeding system.
-			if(pressed & KEY_A){
-				Feed();
-			}
-
-			if(pressed & KEY_B){
-				Heal();
-			}
-
 			if(pressed & KEY_START){
-				if(StoreOpen == false){
+				if(BattleMenuOpen == false){
 					bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
-					dmaCopy(StoreBitmap, bgGetGfxPtr(bg3), 256*192);
-					dmaCopy(StorePal, BG_PALETTE_SUB, 256*2);
-					StoreOpen = true;
+					dmaCopy(BattleMenuBitmap, bgGetGfxPtr(bg3), 256*192);
+					dmaCopy(BattleMenuPal, BG_PALETTE_SUB, 256*2);
+					BattleMenuOpen = true;
 				}
 				else{
 					bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
 					dmaCopy(BottomGameBitmap, bgGetGfxPtr(bg3), 256*192);
 					dmaCopy(BottomGamePal, BG_PALETTE_SUB, 256*2);
-					StoreOpen = false;
+					BattleMenuOpen = false;
 				}
 			}
 
 			bool hit = false;
-			hit = CollisionCheck(TouchBox, FoodButton1);
-			if(hit == true){
-				Feed(1);
+
+			if(BattleMenuOpen == false){
+				hit = CollisionCheck(TouchBox, FoodButton1);
+				if(hit == true){
+					Feed(1);
+				}
+				hit = false;
+				hit = CollisionCheck(TouchBox, FoodButton2);
+				if(hit == true){
+					Feed(2);
+				}
+				hit = false;
+				hit = CollisionCheck(TouchBox, FoodButton3);
+				if(hit == true){
+					Heal(1);
+				}
+				hit = false;
+				hit = CollisionCheck(TouchBox, FoodButton4);
+				if(hit == true){
+					Heal(2);
+				}
+				hit = false;
+				hit = CollisionCheck(TouchBox, FoodButton5);
+				if(hit == true){
+					Heal(3);
+				}
 			}
-			hit = false;
-			hit = CollisionCheck(TouchBox, FoodButton2);
-			if(hit == true){
-				Feed(2);
-			}
-			hit = false;
-			hit = CollisionCheck(TouchBox, FoodButton3);
-			if(hit == true){
-				Heal(1);
-			}
-			hit = false;
-			hit = CollisionCheck(TouchBox, FoodButton4);
-			if(hit == true){
-				Heal(2);
-			}
-			hit = false;
-			hit = CollisionCheck(TouchBox, FoodButton5);
-			if(hit == true){
-				Heal(3);
+			else{
+				hit = CollisionCheck(TouchBox, BattleButton1);
+				if(hit == true){
+					openOfflineBattle();
+				}
+				hit = false;
+				hit = CollisionCheck(TouchBox, BattleButton2);
+				if(hit == true){
+					openLocalBattle();
+				}
+				hit = false;
+				hit = CollisionCheck(TouchBox, BattleButton3);
+				if(hit == true){
+					openOnlineBattle();
+				}
 			}
 
 			//---------------------------------------------------------------------------------------------------------------------------
 
-			Place1 = (Coins/100)%10;
-			Place2 = (Coins/10)%10;
-			Place3 = (Coins/1)%10;
+			Place1 = Coins/100%10;
+			Place2 = Coins/10%10;
+			Place3 = Coins%10;
 
 			if(Place1 == 0){
 				Hunds.anim_frame = 0;
@@ -660,57 +713,115 @@ int main(void) {
 			animate8(&Tens);
 			animate8(&Hunds);
 
-			//Set the sprites
-			oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
-				Pet.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 0, Heart1.Xpos, Heart1.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Heart1.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 1, Heart2.Xpos, Heart2.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Heart2.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 2, Heart3.Xpos, Heart3.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Heart3.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 3, Heart4.Xpos, Heart4.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Heart4.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 4, Heart5.Xpos, Heart5.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Heart5.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 5, Food1.Xpos, Food1.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Food1.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 6, Food2.Xpos, Food2.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Food2.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 7, Food3.Xpos, Food3.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Food3.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 8, Food4.Xpos, Food4.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Food4.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 9, Food5.Xpos, Food5.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Food5.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 10, Effect.Xpos, Effect.Ypos, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
-				Effect.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 11, 236, 25, 0, 3, SpriteSize_8x8, SpriteColorFormat_256Color, 
-				Ones.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 12, 228, 25, 0, 3, SpriteSize_8x8, SpriteColorFormat_256Color, 
-				Tens.sprite_gfx_mem, -1, false, false, false, false, false);
-			oamSet(&oamSub, 13, 220, 25, 0, 3, SpriteSize_8x8, SpriteColorFormat_256Color, 
-				Hunds.sprite_gfx_mem, -1, false, false, false, false, false);
+			if(isInBattle == false){
+				//Set the sprites
+				oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
+					Pet.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 0, Heart1.Xpos, Heart1.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Heart1.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 1, Heart2.Xpos, Heart2.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Heart2.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 2, Heart3.Xpos, Heart3.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Heart3.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 3, Heart4.Xpos, Heart4.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Heart4.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 4, Heart5.Xpos, Heart5.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Heart5.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 5, Food1.Xpos, Food1.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Food1.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 6, Food2.Xpos, Food2.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Food2.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 7, Food3.Xpos, Food3.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Food3.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 8, Food4.Xpos, Food4.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Food4.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 9, Food5.Xpos, Food5.Ypos, 0, 1, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Food5.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 10, Effect.Xpos, Effect.Ypos, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					Effect.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 11, 236, 25, 0, 3, SpriteSize_8x8, SpriteColorFormat_256Color, 
+					Ones.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 12, 228, 25, 0, 3, SpriteSize_8x8, SpriteColorFormat_256Color, 
+					Tens.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamSub, 13, 220, 25, 0, 3, SpriteSize_8x8, SpriteColorFormat_256Color, 
+					Hunds.sprite_gfx_mem, -1, false, false, false, false, false);
 
-			//Increase the variables.
-			HungerFrame++;
-			MovementFrame++;
+				//Increase the variables.
+				HungerFrame++;
+				MovementFrame++;
+			}
 		}
 
 		//If on the title screen.
 		if(GameStart == false){
-			//If you press start.
-			if(pressed & KEY_START){
-				//Change the backgrounds.
-				bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
-				dmaCopy(GameBitmap, bgGetGfxPtr(bg3), 256*192);
-				dmaCopy(GamePal, BG_PALETTE, 256*2);
+			if(isInBattle == true){
+				if(battleState == 0){ // Player's Turn
+					if(PlayersChoice != 0){
+						battleState = 1;
+					}
+				}
+				else if(battleState == 1){ // Enemy's Turn
+					int EnemyChoice = rand() % 3;
+					if(EnemyChoice == 1){
+						if(PlayersChoice != 1){
+							if(PlayersChoice == 3){
+								BattleEnemyHealth--;
+							}
+							else{
+								BattlePlayerHealth--;
+							}
+						}
 
-				bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
-				dmaCopy(BottomGameBitmap, bgGetGfxPtr(bg3), 256*192);
-				dmaCopy(BottomGamePal, BG_PALETTE_SUB, 256*2);
-				//Start the game.
-				GameStart = true;
+					}
+					else if(EnemyChoice == 2){
+						if(PlayersChoice != 2){
+							if(PlayersChoice == 1){
+								BattleEnemyHealth--;
+							}
+							else{
+								BattlePlayerHealth--;
+							}
+						}
+					}
+					else if(EnemyChoice == 3){
+						if(PlayersChoice != 3){
+							if(PlayersChoice == 2){
+								BattleEnemyHealth--;
+							}
+							else{
+								BattlePlayerHealth--;
+							}
+						}
+					}
+				}
+				else if(battleState == 2){ // Player Won
+
+				}
+				else if(battleState == 3){ // Player Lost
+
+				}
+
+				animate32(&Pet);
+				animate32(&Enem);
+				oamSet(&oamMain, 0, 25, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
+					Pet.sprite_gfx_mem, -1, false, false, false, false, false);
+				oamSet(&oamMain, 1, Enem.Xpos, Enem.Ypos, 0, 1, SpriteSize_32x32, SpriteColorFormat_256Color, 
+					Enem.sprite_gfx_mem, -1, false, false, false, false, false);
+			}
+			else{
+				//If you press start.
+				if(pressed & KEY_START){
+					//Change the backgrounds.
+					bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+					dmaCopy(GameBitmap, bgGetGfxPtr(bg3), 256*192);
+					dmaCopy(GamePal, BG_PALETTE, 256*2);
+
+					bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+					dmaCopy(BottomGameBitmap, bgGetGfxPtr(bg3), 256*192);
+					dmaCopy(BottomGamePal, BG_PALETTE_SUB, 256*2);
+					//Start the game.
+					GameStart = true;
+				}
 			}
 		}
 
@@ -776,4 +887,39 @@ void Heal(int Num){
 			}
 		}
 	}
+}
+
+void openOfflineBattle(){
+	//Clear all sprites from the bottom screen
+	oamClear(&oamSub, 0, 127);
+
+	//Change the backgrounds.
+	bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+	dmaCopy(GameBitmap, bgGetGfxPtr(bg3), 256*192);
+	dmaCopy(GamePal, BG_PALETTE, 256*2);
+
+	bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+	dmaCopy(BattleBottomBitmap, bgGetGfxPtr(bg3), 256*192);
+	dmaCopy(BattleBottomPal, BG_PALETTE_SUB, 256*2);
+
+	//Start Battling
+	BattlePlayerHealth = 5;
+	BattleEnemyHealth = 5;
+	isInBattle = true;
+	GameStart = false;
+	battleState = 0;
+}
+
+void openLocalBattle(){
+	oamClear(&oamSub, 0, 127);
+	isInBattle = true;
+	GameStart = false;
+	battleState = true;
+}
+
+void openOnlineBattle(){
+	oamClear(&oamSub, 0, 127);
+	isInBattle = true;
+	GameStart = false;
+	battleState = true;
 }
