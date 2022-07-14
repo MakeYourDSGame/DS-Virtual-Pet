@@ -33,7 +33,60 @@ typedef struct
 	int OffsetY;
 }Box;
 
-Sprite MoveActor(int Xpos, int Ypos, Sprite object){
+bool MoveActor(int Xpos, int Ypos, Sprite *object){
+	bool Go_Right;
+	bool Go_Left;
+	bool Go_Up;
+	bool Go_Down;
+
+	Go_Right = false;
+	Go_Left = false;
+	Go_Up = false;
+	Go_Down = false;
+
+	bool DoneMoving = false;
+
+	DoneMoving = false;
+	
+	if(object->Xpos < Xpos){
+		object->state = W_Walk_Right;
+		Go_Right = true;
+	}
+	else if(object->Xpos > Xpos){
+		object->state = W_Walk_Left;
+		Go_Left = true;
+	}
+
+	if(object->Ypos < Ypos){
+		object->state = W_Walk_Down;
+		Go_Down = true;
+	}
+	else if(object->Ypos > Ypos){
+		object->state = W_Walk_Up;
+		Go_Up = true;
+	}
+	else{
+		DoneMoving = true;
+	}
+
+	if(Go_Right){
+		object->Xpos++;
+	}
+	else if(Go_Left){
+		object->Xpos--;
+	}
+
+	if(Go_Down){
+		object->Ypos++;
+	}
+	else if(Go_Up){
+		object->Ypos--;
+	}
+
+	return DoneMoving;
+}
+
+Sprite MoveActorSmooth(int Xpos, int Ypos, Sprite object){
 	bool Go_Right;
 	bool Go_Left;
 	bool Go_Up;

@@ -47,20 +47,27 @@ bool BattleMenuOpen = false;
 bool isInBattle = false;
 bool GameStart = false;
 
-int battleState = 0;
+bool doneMove = false;
+bool doneMoveBack = false;
+
 /*
 0 = Player's Turn
 1 = Enemy's turn
-2 = Player Won
-3 = Player Lost
+2 = Player Move
+3 = Enemy Move
+4 = Player Won
+5 = Player Lost
 */
-int PlayersChoice = 0;
+int battleState = 0;
+
 /*
 0 = Null
 1 = Rock
-2 = Scissors
-3 = Paper
+2 = Paper
+3 = Scissors
 */
+int PlayersChoice = 0;
+
 int BattleEnemyHealth;
 int BattlePlayerHealth;
 
@@ -196,6 +203,24 @@ int main(void) {
 	BattleButton3.SizeY = 24;
 	BattleButton3.Xpos = 105;
 	BattleButton3.Ypos = 149;
+
+	Box RockButton;
+	RockButton.SizeX = 48;
+	RockButton.SizeY = 24;
+	RockButton.Xpos = 25;
+	RockButton.Ypos = 93;
+
+	Box PaperButton;
+	PaperButton.SizeX = 48;
+	PaperButton.SizeY = 24;
+	PaperButton.Xpos = 105;
+	PaperButton.Ypos = 93;
+
+	Box ScissorsButton;
+	ScissorsButton.SizeX = 48;
+	ScissorsButton.SizeY = 24;
+	ScissorsButton.Xpos = 185;
+	ScissorsButton.Ypos = 93;
 
 	//Touch Position
 	touchPosition touch;
@@ -382,7 +407,7 @@ int main(void) {
 			}
 			else{
 				//Move the "Pet".
-				Pet = MoveActor(goingX, Pet.Ypos, Pet);
+				Pet = MoveActorSmooth(goingX, Pet.Ypos, Pet);
 			}
 
 			if(SickFrames >= 800){
@@ -471,6 +496,7 @@ int main(void) {
 			else{
 				hit = CollisionCheck(TouchBox, BattleButton1);
 				if(hit == true){
+					Pet.Xpos = 25;
 					openOfflineBattle();
 				}
 				hit = false;
@@ -755,58 +781,154 @@ int main(void) {
 		//If on the title screen.
 		if(GameStart == false){
 			if(isInBattle == true){
+				if(pressed & KEY_TOUCH){
+					TouchBox.Xpos = touch.px;
+					TouchBox.Ypos = touch.py;
+				}
+				else{
+					TouchBox.Xpos = -20;
+					TouchBox.Ypos = -20;
+				}
+
 				if(battleState == 0){ // Player's Turn
+					Pet.Ypos = 1;
+					bool hit = false;
+					hit = CollisionCheck(TouchBox, RockButton);
+					if(hit == true){
+						PlayersChoice = 1;
+					}
+					else{
+						hit = CollisionCheck(TouchBox, PaperButton);
+						if(hit == true){
+							PlayersChoice = 2;
+						}
+						else{
+							hit = CollisionCheck(TouchBox, ScissorsButton);
+							if(hit == true){
+								PlayersChoice = 3;
+							}
+						}
+					}
+
 					if(PlayersChoice != 0){
+						//bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+						//dmaCopy(BottomGameBitmap, bgGetGfxPtr(bg3), 256*192);
+						//dmaCopy(BottomGamePal, BG_PALETTE_SUB, 256*2);
 						battleState = 1;
 					}
 				}
 				else if(battleState == 1){ // Enemy's Turn
+					Pet.Xpos = 1; 
 					int EnemyChoice = rand() % 3;
 					if(EnemyChoice == 1){
 						if(PlayersChoice != 1){
-							if(PlayersChoice == 3){
+							if(PlayersChoice == 2){
 								BattleEnemyHealth--;
+								battleState = 2;
 							}
 							else{
 								BattlePlayerHealth--;
+								battleState = 3;
 							}
+						}
+						else{
+							battleState = 0;
+							PlayersChoice = 0;
 						}
 
 					}
 					else if(EnemyChoice == 2){
 						if(PlayersChoice != 2){
-							if(PlayersChoice == 1){
+							if(PlayersChoice == 3){
 								BattleEnemyHealth--;
+								battleState = 2;
 							}
 							else{
 								BattlePlayerHealth--;
+								battleState = 3;
 							}
+						}
+						else{
+							battleState = 0;
+							PlayersChoice = 0;
 						}
 					}
 					else if(EnemyChoice == 3){
 						if(PlayersChoice != 3){
-							if(PlayersChoice == 2){
+							if(PlayersChoice == 1){
 								BattleEnemyHealth--;
+								battleState = 2;
 							}
 							else{
 								BattlePlayerHealth--;
+								battleState = 3;
 							}
+						}
+						else{
+							battleState = 0;
+							PlayersChoice = 0;
 						}
 					}
 				}
-				else if(battleState == 2){ // Player Won
+				else if(battleState == 2){ // Player Move
+					Pet.Xpos = 100;
+					Pet.Ypos = 90; 
+					if(doneMove == false){
+						doneMove = MoveActor(Enem.Xpos - 32, Pet.Ypos, &Pet);
+					}
+
+					if(doneMove == true){
+						doneMoveBack = MoveActor(25, Pet.Ypos, &Pet);
+					}
+
+					if(doneMoveBack == true){
+						if(BattleEnemyHealth <= 0){
+							//battleState = 0; // 4
+							//Pet.Ypos = 10;
+						}
+					}
+				}
+				else if(battleState == 3){ // Enemy Move
+					doneMove = false;
+					doneMove = MoveActor(Pet.Xpos + 32, Enem.Ypos, &Enem);
+
+					if(doneMove == true){
+						doneMoveBack = MoveActor(198, Enem.Ypos, &Enem);
+					}
+
+					if(doneMoveBack == true){
+						if(BattlePlayerHealth <= 0){
+							//battleState = 0; // 5
+							Enem.Xpos = 70;
+						}
+					}
+				}
+				else if(battleState == 4){ // Player Won
 
 				}
-				else if(battleState == 3){ // Player Lost
+				else if(battleState == 5){ // Player Lost
 
 				}
 
 				animate32(&Pet);
 				animate32(&Enem);
-				oamSet(&oamMain, 0, 25, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
+				oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
 					Pet.sprite_gfx_mem, -1, false, false, false, false, false);
 				oamSet(&oamMain, 1, Enem.Xpos, Enem.Ypos, 0, 1, SpriteSize_32x32, SpriteColorFormat_256Color, 
 					Enem.sprite_gfx_mem, -1, false, false, false, false, false);
+
+				if(PlayersChoice == 1){
+					oamSet(&oamMain, 2, Enem.Xpos, Enem.Ypos, 0, 1, SpriteSize_32x32, SpriteColorFormat_256Color, 
+					Enem.sprite_gfx_mem, -1, false, false, false, false, false);
+				}
+				else if(PlayersChoice == 2){
+					oamSet(&oamMain, 2, Enem.Xpos, Enem.Ypos, 0, 1, SpriteSize_32x32, SpriteColorFormat_256Color, 
+					Pet.sprite_gfx_mem, -1, false, false, false, false, false);
+				}
+				else{
+					oamSet(&oamMain, 2, Pet.Xpos, Enem.Ypos, 0, 1, SpriteSize_32x32, SpriteColorFormat_256Color, 
+					Enem.sprite_gfx_mem, -1, false, false, false, false, false);
+				}
 			}
 			else{
 				//If you press start.
