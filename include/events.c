@@ -65,7 +65,8 @@ bool MoveActor(int Xpos, int Ypos, Sprite *object){
 		object->state = W_Walk_Up;
 		Go_Up = true;
 	}
-	else{
+
+	if(object->Ypos == Ypos && object->Xpos == Xpos){
 		DoneMoving = true;
 	}
 
