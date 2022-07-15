@@ -304,14 +304,14 @@ int main(void) {
 	mmInitDefaultMem((mm_addr)soundbank_bin);
 	
 	// load the module
-	mmLoad( MOD_MYSONG );
+	mmLoad( MOD_STAR );
 
 	// load sound effects
 	//mmLoadEffect( SFX_AMBULANCE );
 	//mmLoadEffect( SFX_BOOM );
 
 	// Start playing module
-	mmStart( MOD_MYSONG, MM_PLAY_LOOP );
+	mmStart( MOD_STAR, MM_PLAY_LOOP );
 
 /*
 	mm_sound_effect ambulance = {
@@ -838,7 +838,7 @@ int main(void) {
 				else if(battleState == 1){ // Enemy's Turn
 					if(EnemyChoice == 0){
 						EnemyChoice = rand() % 3;
-						EnemyChoice = 2;
+						//EnemyChoice = 2;
 					}
 
 					if(EnemyChoice == 1){
