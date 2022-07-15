@@ -304,14 +304,14 @@ int main(void) {
 	mmInitDefaultMem((mm_addr)soundbank_bin);
 	
 	// load the module
-	mmLoad( MOD_STAR );
+	mmLoad( MOD_MYSONG );
 
 	// load sound effects
 	//mmLoadEffect( SFX_AMBULANCE );
 	//mmLoadEffect( SFX_BOOM );
 
 	// Start playing module
-	mmStart( MOD_STAR, MM_PLAY_LOOP );
+	mmStart( MOD_MYSONG, MM_PLAY_LOOP );
 
 /*
 	mm_sound_effect ambulance = {
@@ -955,15 +955,12 @@ int main(void) {
 						Hunger--;
 					}
 
-					int randCoins = rand() % 3;
-					if(randCoins == 1){
+					int randCoins = rand() % 100;
+					if(randCoins < 51){
 						Coins += 5;
 					}
-					else if(randCoins == 2){
-						Coins += 10;
-					}
 					else{
-						Coins += 15;
+						Coins += 10;
 					}
 
 					isInBattle = false;
