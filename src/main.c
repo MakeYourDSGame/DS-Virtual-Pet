@@ -69,6 +69,16 @@ int battleState = 0;
 */
 int PlayersChoice = 0;
 
+/*
+0 = Choose
+1 = Ghost
+2 = PC
+3 = ?
+4 = ?
+5 = ?
+*/
+int PetYouHave = 0;
+
 int BattleEnemyHealth;
 int BattlePlayerHealth;
 
@@ -145,6 +155,12 @@ int main(void) {
 	Sprite EnemyAttack = {0,0};
 
 	Sprite PlayerAttack = {0,0};
+
+	Sprite Phantom = {0,0};
+	Sprite BSOL = {0,0};
+	Sprite Three = {0,0};
+	Sprite Four = {0,0};
+	Sprite Five = {0,0}
 
 	
 	//Set Up Collision Boxes
@@ -242,7 +258,15 @@ int main(void) {
 	//Set F Bank.
 	vramSetBankF(VRAM_F_LCD);
 	//Pet
-	init32(&Pet, (u8*)Pet16Tiles);
+	init32(&Phantom, (u8*)Pet16Tiles);
+	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
+	init32(&Phantom, (u8*)Pet16Tiles);
+	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
+	init32(&Phantom, (u8*)Pet16Tiles);
+	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
+	init32(&Phantom, (u8*)Pet16Tiles);
+	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
+	init32(&Phantom, (u8*)Pet16Tiles);
 	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
 	//Enemy
 	init32(&Enem, (u8*)EnemyTiles);
@@ -511,12 +535,12 @@ int main(void) {
 					openOfflineBattle();
 				}
 				hit = false;
-				hit = CollisionCheck(TouchBox, BattleButton2);
+				//hit = CollisionCheck(TouchBox, BattleButton2);
 				if(hit == true){
 					openLocalBattle();
 				}
 				hit = false;
-				hit = CollisionCheck(TouchBox, BattleButton3);
+				//hit = CollisionCheck(TouchBox, BattleButton3);
 				if(hit == true){
 					openOnlineBattle();
 				}
@@ -1000,6 +1024,25 @@ int main(void) {
 					oamClear(&oamMain, 0, 127);
 				}
 
+				TimeBetweenFramesDone++;
+				if(TimeBetweenFramesDone >= TimeBetweenFrames){
+					TimeBetweenFramesDone = 0;
+					Pet.anim_frame++;
+					if(Pet.anim_frame == FRAMES_PER_ANIMATION){
+						Pet.anim_frame = 0;
+					}
+				}
+
+				int TimeBetweenFramesEnemyDone;
+				TimeBetweenFramesEnemyDone++;
+				if(TimeBetweenFramesEnemyDone >= TimeBetweenFrames){
+					TimeBetweenFramesEnemyDone = 0;
+					Enem.anim_frame++;
+					if(Enem.anim_frame == FRAMES_PER_ANIMATION){
+						Enem.anim_frame = 0;
+					}
+				}
+
 
 				animate32(&Pet);
 				animate32(&Enem);
@@ -1011,9 +1054,9 @@ int main(void) {
 				if(battleState != 4 && battleState != 5){
 					oamSet(&oamMain, 1, Enem.Xpos, Enem.Ypos, 0, 1, SpriteSize_32x32, SpriteColorFormat_256Color, 
 						Enem.sprite_gfx_mem, -1, false, false, false, false, false);
-					oamSet(&oamMain, 2, 0, 0, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					oamSet(&oamMain, 2, 16, 16, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
 						PlayerAttack.sprite_gfx_mem, -1, false, false, false, false, false);
-					oamSet(&oamMain, 3, 256 - 16, 0, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					oamSet(&oamMain, 3, 256 - 32, 16, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
 						EnemyAttack.sprite_gfx_mem, -1, false, false, false, false, false);
 				}
 			}
@@ -1119,6 +1162,7 @@ void openOfflineBattle(){
 	battleState = 0;
 	doneMove = false;
 	doneMoveBack = false;
+	PlayersChoice = 0;
 }
 
 void openLocalBattle(){
