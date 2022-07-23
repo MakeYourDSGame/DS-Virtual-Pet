@@ -19,6 +19,8 @@ typedef struct
 
 	int state;
 	int anim_frame;
+
+	int palette;
 }Sprite;
 
 typedef struct

@@ -16,8 +16,8 @@ SpriteEntry OAMCopy[128];
 #include <BattleBottom.h>
 
 //Sprites
-#include <Pet16.h>
-#include <Enemy.h>
+#include <Ghost.h>
+#include <BSOD.h>
 #include <Hearts.h>
 #include <Hunger.h>
 #include <Sick.h>
@@ -70,14 +70,14 @@ int battleState = 0;
 int PlayersChoice = 0;
 
 /*
-0 = Choose
-1 = Ghost
-2 = PC
+0 = Ghost
+1 = PC
+2 = ?
 3 = ?
 4 = ?
-5 = ?
+5 = Choose
 */
-int PetYouHave = 0;
+int PetYouHave = 5;
 
 int BattleEnemyHealth;
 int BattlePlayerHealth;
@@ -160,7 +160,7 @@ int main(void) {
 	Sprite BSOL = {0,0};
 	Sprite Three = {0,0};
 	Sprite Four = {0,0};
-	Sprite Five = {0,0}
+	Sprite Five = {0,0};
 
 	
 	//Set Up Collision Boxes
@@ -258,19 +258,19 @@ int main(void) {
 	//Set F Bank.
 	vramSetBankF(VRAM_F_LCD);
 	//Pet
-	init32(&Phantom, (u8*)Pet16Tiles);
-	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
-	init32(&Phantom, (u8*)Pet16Tiles);
-	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
-	init32(&Phantom, (u8*)Pet16Tiles);
-	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
-	init32(&Phantom, (u8*)Pet16Tiles);
-	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
-	init32(&Phantom, (u8*)Pet16Tiles);
-	dmaCopy(Pet16Pal, &VRAM_F_EXT_SPR_PALETTE[0][0],Pet16PalLen);
+	init32(&Phantom, (u8*)GhostTiles);
+	dmaCopy(GhostPal, &VRAM_F_EXT_SPR_PALETTE[0][0],GhostPalLen);
+	init32(&BSOL, (u8*)BSODTiles);
+	dmaCopy(BSODPal, &VRAM_F_EXT_SPR_PALETTE[1][0],BSODPalLen);
+	init32(&Three, (u8*)GhostTiles);
+	dmaCopy(GhostPal, &VRAM_F_EXT_SPR_PALETTE[3][0],GhostPalLen);
+	init32(&Four, (u8*)GhostTiles);
+	dmaCopy(GhostPal, &VRAM_F_EXT_SPR_PALETTE[4][0],GhostPalLen);
+	init32(&Five, (u8*)GhostTiles);
+	dmaCopy(GhostPal, &VRAM_F_EXT_SPR_PALETTE[5][0],GhostPalLen);
 	//Enemy
-	init32(&Enem, (u8*)EnemyTiles);
-	dmaCopy(EnemyPal, &VRAM_F_EXT_SPR_PALETTE[1][0],EnemyPalLen);
+	init32(&Enem, (u8*)BSODTiles);
+	dmaCopy(BSODPal, &VRAM_F_EXT_SPR_PALETTE[1][0],BSODPalLen);
 	//Battle Choices
 	init32(&EnemyAttack, (u8*)BattleIconsTiles);
 	dmaCopy(BattleIconsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],BattleIconsPalLen);
@@ -315,6 +315,33 @@ int main(void) {
 	dmaCopy(NumbersPal, &VRAM_I_EXT_SPR_PALETTE[3][0],NumbersPalLen);
 	//Set I Bank.
 	vramSetBankI(VRAM_I_SUB_SPRITE_EXT_PALETTE);
+
+	PetYouHave = rand() % 4;
+	if(PetYouHave == 0){
+		Pet.sprite_gfx_mem = Phantom.sprite_gfx_mem;
+		Pet.frame_gfx = Phantom.frame_gfx;
+		Pet.palette = 0;
+	}
+	else if(PetYouHave == 1){
+		Pet.sprite_gfx_mem = BSOL.sprite_gfx_mem;
+		Pet.frame_gfx = BSOL.frame_gfx;
+		Pet.palette = 1;
+	}
+	else if(PetYouHave == 2){
+		Pet.sprite_gfx_mem = Phantom.sprite_gfx_mem;
+		Pet.frame_gfx = Phantom.frame_gfx;
+		Pet.palette = 3;
+	}
+	else if(PetYouHave == 3){
+		Pet.sprite_gfx_mem = Phantom.sprite_gfx_mem;
+		Pet.frame_gfx = Phantom.frame_gfx;
+		Pet.palette = 4;
+	}
+	else if(PetYouHave == 4){
+		Pet.sprite_gfx_mem = Phantom.sprite_gfx_mem;
+		Pet.frame_gfx = Phantom.frame_gfx;
+		Pet.palette = 5;
+	}
 
 	//Title screen background.
 	bg3 = bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
@@ -775,7 +802,7 @@ int main(void) {
 
 			if(isInBattle == false){
 				//Set the sprites
-				oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
+				oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, Pet.palette, SpriteSize_32x32, SpriteColorFormat_256Color, 
 					Pet.sprite_gfx_mem, -1, false, false, false, false, false);
 				oamSet(&oamSub, 0, Heart1.Xpos, Heart1.Ypos, 0, 0, SpriteSize_16x16, SpriteColorFormat_256Color, 
 					Heart1.sprite_gfx_mem, -1, false, false, false, false, false);
@@ -1049,7 +1076,7 @@ int main(void) {
 				animate16(&PlayerAttack);
 				animate16(&EnemyAttack);
 
-				oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, 0, SpriteSize_32x32, SpriteColorFormat_256Color, 
+				oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, Pet.palette, SpriteSize_32x32, SpriteColorFormat_256Color, 
 					Pet.sprite_gfx_mem, -1, false, false, false, false, false);
 				if(battleState != 4 && battleState != 5){
 					oamSet(&oamMain, 1, Enem.Xpos, Enem.Ypos, 0, 1, SpriteSize_32x32, SpriteColorFormat_256Color, 
