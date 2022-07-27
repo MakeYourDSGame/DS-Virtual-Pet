@@ -83,10 +83,28 @@ int PlayersChoice = 0;
 */
 int PetYouHave = 5;
 
+/*
+0 = Ghost
+1 = PC
+2 = ?
+3 = ?
+4 = ?
+5 = Choose
+*/
+int EnemyPet = 5;
+
 int BattleEnemyHealth;
 int BattlePlayerHealth;
 
 int bg3;
+
+Sprite Phantom = {0,0};
+Sprite BSOL = {0,0};
+Sprite Three = {0,0};
+Sprite Four = {0,0};
+Sprite Five = {0,0};
+
+Sprite Enem = {0,0};
 
 enum { CONTINUOUS, SINGLE } TouchType = CONTINUOUS;
 
@@ -152,19 +170,12 @@ int main(void) {
 	Sprite Tens = {0,0};
 	Sprite Hunds = {0,0};
 
-	Sprite Enem = {0,0};
 	Enem.Xpos = 198;
 	Enem.Ypos = 140;
 
 	Sprite EnemyAttack = {0,0};
 
 	Sprite PlayerAttack = {0,0};
-
-	Sprite Phantom = {0,0};
-	Sprite BSOL = {0,0};
-	Sprite Three = {0,0};
-	Sprite Four = {0,0};
-	Sprite Five = {0,0};
 
 	
 	//Set Up Collision Boxes
@@ -1090,7 +1101,7 @@ int main(void) {
 				oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, Pet.palette, SpriteSize_32x32, SpriteColorFormat_256Color, 
 					Pet.sprite_gfx_mem, -1, false, false, false, false, false);
 				if(battleState != 4 && battleState != 5){
-					oamSet(&oamMain, 1, Enem.Xpos, Enem.Ypos, 0, 1, SpriteSize_32x32, SpriteColorFormat_256Color, 
+					oamSet(&oamMain, 1, Enem.Xpos, Enem.Ypos, 0, Enem.palette, SpriteSize_32x32, SpriteColorFormat_256Color, 
 						Enem.sprite_gfx_mem, -1, false, false, false, false, false);
 					oamSet(&oamMain, 2, 16, 16, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
 						PlayerAttack.sprite_gfx_mem, -1, false, false, false, false, false);
@@ -1191,6 +1202,35 @@ void openOfflineBattle(){
 	bg3 = bgInitSub(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
 	dmaCopy(BattleBottomBitmap, bgGetGfxPtr(bg3), 256*192);
 	dmaCopy(BattleBottomPal, BG_PALETTE_SUB, 256*2);
+
+	srand ( time(NULL) );
+	EnemyPet = rand() % 5;
+	if(EnemyPet == 0){
+		Enem.sprite_gfx_mem = Phantom.sprite_gfx_mem;
+		Enem.frame_gfx = Phantom.frame_gfx;
+		Enem.palette = 0;
+	}
+	else if(EnemyPet == 1){
+		Enem.sprite_gfx_mem = BSOL.sprite_gfx_mem;
+		Enem.frame_gfx = BSOL.frame_gfx;
+		Enem.palette = 1;
+	}
+	else if(EnemyPet == 2){
+		Enem.sprite_gfx_mem = Three.sprite_gfx_mem;
+		Enem.frame_gfx = Three.frame_gfx;
+		Enem.palette = 3;
+	}
+	else if(EnemyPet == 3){
+		Enem.sprite_gfx_mem = Four.sprite_gfx_mem;
+		Enem.frame_gfx = Four.frame_gfx;
+		Enem.palette = 4;
+	}
+	else if(EnemyPet == 4){
+		Enem.sprite_gfx_mem = Five.sprite_gfx_mem;
+		Enem.frame_gfx = Five.frame_gfx;
+		Enem.palette = 5;
+	}
+	
 
 	//Start Battling
 	BattlePlayerHealth = 5;
