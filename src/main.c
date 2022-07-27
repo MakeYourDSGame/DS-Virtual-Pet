@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <maxmod9.h>
+#include <time.h>
 
 SpriteEntry OAMCopy[128];
 
@@ -18,6 +19,9 @@ SpriteEntry OAMCopy[128];
 //Sprites
 #include <Ghost.h>
 #include <BSOD.h>
+#include <Three.h>
+#include <Four.h>
+#include <Five.h>
 #include <Hearts.h>
 #include <Hunger.h>
 #include <Sick.h>
@@ -262,12 +266,12 @@ int main(void) {
 	dmaCopy(GhostPal, &VRAM_F_EXT_SPR_PALETTE[0][0],GhostPalLen);
 	init32(&BSOL, (u8*)BSODTiles);
 	dmaCopy(BSODPal, &VRAM_F_EXT_SPR_PALETTE[1][0],BSODPalLen);
-	init32(&Three, (u8*)GhostTiles);
-	dmaCopy(GhostPal, &VRAM_F_EXT_SPR_PALETTE[3][0],GhostPalLen);
-	init32(&Four, (u8*)GhostTiles);
-	dmaCopy(GhostPal, &VRAM_F_EXT_SPR_PALETTE[4][0],GhostPalLen);
-	init32(&Five, (u8*)GhostTiles);
-	dmaCopy(GhostPal, &VRAM_F_EXT_SPR_PALETTE[5][0],GhostPalLen);
+	init32(&Three, (u8*)ThreeTiles);
+	dmaCopy(ThreePal, &VRAM_F_EXT_SPR_PALETTE[3][0],ThreePalLen);
+	init32(&Four, (u8*)FourTiles);
+	dmaCopy(FourPal, &VRAM_F_EXT_SPR_PALETTE[4][0],FourPalLen);
+	init32(&Five, (u8*)FiveTiles);
+	dmaCopy(FivePal, &VRAM_F_EXT_SPR_PALETTE[5][0],FivePalLen);
 	//Enemy
 	init32(&Enem, (u8*)BSODTiles);
 	dmaCopy(BSODPal, &VRAM_F_EXT_SPR_PALETTE[1][0],BSODPalLen);
@@ -316,7 +320,14 @@ int main(void) {
 	//Set I Bank.
 	vramSetBankI(VRAM_I_SUB_SPRITE_EXT_PALETTE);
 
-	PetYouHave = rand() % 4;
+	animate32(&Phantom);
+	animate32(&BSOL);
+	animate32(&Three);
+	animate32(&Four);
+	animate32(&Five);
+
+	srand ( time(NULL) );
+	PetYouHave = rand() % 5;
 	if(PetYouHave == 0){
 		Pet.sprite_gfx_mem = Phantom.sprite_gfx_mem;
 		Pet.frame_gfx = Phantom.frame_gfx;
@@ -328,18 +339,18 @@ int main(void) {
 		Pet.palette = 1;
 	}
 	else if(PetYouHave == 2){
-		Pet.sprite_gfx_mem = Phantom.sprite_gfx_mem;
-		Pet.frame_gfx = Phantom.frame_gfx;
+		Pet.sprite_gfx_mem = Three.sprite_gfx_mem;
+		Pet.frame_gfx = Three.frame_gfx;
 		Pet.palette = 3;
 	}
 	else if(PetYouHave == 3){
-		Pet.sprite_gfx_mem = Phantom.sprite_gfx_mem;
-		Pet.frame_gfx = Phantom.frame_gfx;
+		Pet.sprite_gfx_mem = Four.sprite_gfx_mem;
+		Pet.frame_gfx = Four.frame_gfx;
 		Pet.palette = 4;
 	}
 	else if(PetYouHave == 4){
-		Pet.sprite_gfx_mem = Phantom.sprite_gfx_mem;
-		Pet.frame_gfx = Phantom.frame_gfx;
+		Pet.sprite_gfx_mem = Five.sprite_gfx_mem;
+		Pet.frame_gfx = Five.frame_gfx;
 		Pet.palette = 5;
 	}
 
