@@ -103,6 +103,11 @@ Sprite BSOL = {0,0};
 Sprite Three = {0,0};
 Sprite Four = {0,0};
 Sprite Five = {0,0};
+Sprite PhantomEnem = {0,0};
+Sprite BSOLEnem = {0,0};
+Sprite ThreeEnem = {0,0};
+Sprite FourEnem = {0,0};
+Sprite FiveEnem = {0,0};
 
 Sprite Enem = {0,0};
 
@@ -284,8 +289,16 @@ int main(void) {
 	init32(&Five, (u8*)FiveTiles);
 	dmaCopy(FivePal, &VRAM_F_EXT_SPR_PALETTE[5][0],FivePalLen);
 	//Enemy
-	init32(&Enem, (u8*)BSODTiles);
+	init32(&PhantomEnem, (u8*)GhostTiles);
+	dmaCopy(GhostPal, &VRAM_F_EXT_SPR_PALETTE[0][0],GhostPalLen);
+	init32(&BSOLEnem, (u8*)BSODTiles);
 	dmaCopy(BSODPal, &VRAM_F_EXT_SPR_PALETTE[1][0],BSODPalLen);
+	init32(&ThreeEnem, (u8*)ThreeTiles);
+	dmaCopy(ThreePal, &VRAM_F_EXT_SPR_PALETTE[3][0],ThreePalLen);
+	init32(&FourEnem, (u8*)FourTiles);
+	dmaCopy(FourPal, &VRAM_F_EXT_SPR_PALETTE[4][0],FourPalLen);
+	init32(&FiveEnem, (u8*)FiveTiles);
+	dmaCopy(FivePal, &VRAM_F_EXT_SPR_PALETTE[5][0],FivePalLen);
 	//Battle Choices
 	init32(&EnemyAttack, (u8*)BattleIconsTiles);
 	dmaCopy(BattleIconsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],BattleIconsPalLen);
@@ -336,6 +349,12 @@ int main(void) {
 	animate32(&Three);
 	animate32(&Four);
 	animate32(&Five);
+
+	animate32(&PhantomEnem);
+	animate32(&BSOLEnem);
+	animate32(&ThreeEnem);
+	animate32(&FourEnem);
+	animate32(&FiveEnem);
 
 	srand ( time(NULL) );
 	PetYouHave = rand() % 5;
@@ -581,6 +600,7 @@ int main(void) {
 				hit = CollisionCheck(TouchBox, BattleButton1);
 				if(hit == true){
 					Pet.Xpos = 25;
+					Pet.state = W_Walk_Right;
 					openOfflineBattle();
 				}
 				hit = false;
@@ -1203,31 +1223,31 @@ void openOfflineBattle(){
 	dmaCopy(BattleBottomBitmap, bgGetGfxPtr(bg3), 256*192);
 	dmaCopy(BattleBottomPal, BG_PALETTE_SUB, 256*2);
 
-	srand ( time(NULL) );
+	//srand ( time(NULL) );
 	EnemyPet = rand() % 5;
 	if(EnemyPet == 0){
-		Enem.sprite_gfx_mem = Phantom.sprite_gfx_mem;
-		Enem.frame_gfx = Phantom.frame_gfx;
+		Enem.sprite_gfx_mem = PhantomEnem.sprite_gfx_mem;
+		Enem.frame_gfx = PhantomEnem.frame_gfx;
 		Enem.palette = 0;
 	}
 	else if(EnemyPet == 1){
-		Enem.sprite_gfx_mem = BSOL.sprite_gfx_mem;
-		Enem.frame_gfx = BSOL.frame_gfx;
+		Enem.sprite_gfx_mem = BSOLEnem.sprite_gfx_mem;
+		Enem.frame_gfx = BSOLEnem.frame_gfx;
 		Enem.palette = 1;
 	}
 	else if(EnemyPet == 2){
-		Enem.sprite_gfx_mem = Three.sprite_gfx_mem;
-		Enem.frame_gfx = Three.frame_gfx;
+		Enem.sprite_gfx_mem = ThreeEnem.sprite_gfx_mem;
+		Enem.frame_gfx = ThreeEnem.frame_gfx;
 		Enem.palette = 3;
 	}
 	else if(EnemyPet == 3){
-		Enem.sprite_gfx_mem = Four.sprite_gfx_mem;
-		Enem.frame_gfx = Four.frame_gfx;
+		Enem.sprite_gfx_mem = FourEnem.sprite_gfx_mem;
+		Enem.frame_gfx = FourEnem.frame_gfx;
 		Enem.palette = 4;
 	}
 	else if(EnemyPet == 4){
-		Enem.sprite_gfx_mem = Five.sprite_gfx_mem;
-		Enem.frame_gfx = Five.frame_gfx;
+		Enem.sprite_gfx_mem = FiveEnem.sprite_gfx_mem;
+		Enem.frame_gfx = FiveEnem.frame_gfx;
 		Enem.palette = 5;
 	}
 	
