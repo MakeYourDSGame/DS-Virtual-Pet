@@ -11,3 +11,5 @@ In this game, you feed, and battle your pet to level them up!
 - Offline Battling
 - Local Battling
 - Online Battling
+- Critical Attack
+- Blocking

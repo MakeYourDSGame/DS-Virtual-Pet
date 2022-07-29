@@ -55,6 +55,8 @@ bool GameStart = false;
 bool doneMove = false;
 bool doneMoveBack = false;
 
+bool canCrit = true;
+
 /*
 0 = Player's Turn
 1 = Enemy's turn
@@ -996,10 +998,25 @@ int main(void) {
 							EnemyChoice = 0;
 						}
 					}
+					canCrit = true;
 				}
 				else if(battleState == 2){ // Player Move
 					if(doneMove == false){
 						doneMove = MoveActor(Enem.Xpos - 32, Pet.Ypos, &Pet);
+						if(canCrit == true){
+							if(Pet.Xpos >= Enem.Xpos - 16){
+								if(pressed & KEY_A){
+									BattleEnemyHealth--;
+									Pet.Ypos = 10;
+								}
+							}
+							else{
+								if(pressed & KEY_A){
+									canCrit = false;
+								}
+							}
+						}
+						
 					}
 
 					if(doneMove == true){
@@ -1023,6 +1040,14 @@ int main(void) {
 				else if(battleState == 3){ // Enemy Move
 					if(doneMove == false){
 						doneMove = MoveActor(Pet.Xpos + 32, Enem.Ypos, &Enem);
+						if(Pet.Xpos >= Enem.Xpos - 8){
+							if(pressed & KEY_A){
+								int blocked = rand() % 100;
+								if(blocked <= 49){
+									BattlePlayerHealth++;
+								}
+							}
+						}
 					}
 
 					if(doneMove == true){
@@ -1223,7 +1248,6 @@ void openOfflineBattle(){
 	dmaCopy(BattleBottomBitmap, bgGetGfxPtr(bg3), 256*192);
 	dmaCopy(BattleBottomPal, BG_PALETTE_SUB, 256*2);
 
-	//srand ( time(NULL) );
 	EnemyPet = rand() % 5;
 	if(EnemyPet == 0){
 		Enem.sprite_gfx_mem = PhantomEnem.sprite_gfx_mem;
