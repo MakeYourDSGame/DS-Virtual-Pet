@@ -13,6 +13,7 @@ SpriteEntry OAMCopy[128];
 #include <BottomGame.h>
 #include <BattleMenu.h>
 #include <BattleIcons.h>
+#include <Crit.h>
 
 #include <BattleBottom.h>
 
@@ -38,6 +39,7 @@ int MovementFrameNum = 0;
 int TimeBetweenFrames = 25;
 int TimeBetweenFramesDone = 0;
 int SickFrames = 0;
+int CritTime = 0;
 
 int Coins = 100;
 int Place1 = 0;
@@ -112,6 +114,8 @@ Sprite FourEnem = {0,0};
 Sprite FiveEnem = {0,0};
 
 Sprite Enem = {0,0};
+
+Sprite CritEffect = {0,0};
 
 enum { CONTINUOUS, SINGLE } TouchType = CONTINUOUS;
 
@@ -306,6 +310,9 @@ int main(void) {
 	dmaCopy(BattleIconsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],BattleIconsPalLen);
 	init32(&PlayerAttack, (u8*)BattleIconsTiles);
 	dmaCopy(BattleIconsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],BattleIconsPalLen);
+	//Crit
+	init3216(&CritEffect, (u8*)CritTiles);
+	dmaCopy(CritPal, &VRAM_F_EXT_SPR_PALETTE[6][0],CritPalLen);
 	//Set F Bank.
 	vramSetBankF(VRAM_F_SPRITE_EXT_PALETTE);
 
@@ -357,6 +364,8 @@ int main(void) {
 	animate32(&ThreeEnem);
 	animate32(&FourEnem);
 	animate32(&FiveEnem);
+
+	animate3216(&CritEffect);
 
 	srand ( time(NULL) );
 	PetYouHave = rand() % 5;
@@ -1004,17 +1013,20 @@ int main(void) {
 					if(doneMove == false){
 						doneMove = MoveActor(Enem.Xpos - 32, Pet.Ypos, &Pet);
 						if(canCrit == true){
-							if(Pet.Xpos >= Enem.Xpos - 16){
+							if(Pet.Xpos >= Enem.Xpos - 40){
 								if(pressed & KEY_A){
 									BattleEnemyHealth--;
-									Pet.Ypos = 10;
+									CritEffect.Xpos = Pet.Xpos;
+									CritEffect.anim_frame = 1;
+									CritTime = 0;
+								}
+								else{
+									if(pressed & KEY_A){
+										canCrit = false;
+									}
 								}
 							}
-							else{
-								if(pressed & KEY_A){
-									canCrit = false;
-								}
-							}
+							
 						}
 						
 					}
@@ -1040,12 +1052,19 @@ int main(void) {
 				else if(battleState == 3){ // Enemy Move
 					if(doneMove == false){
 						doneMove = MoveActor(Pet.Xpos + 32, Enem.Ypos, &Enem);
-						if(Pet.Xpos >= Enem.Xpos - 8){
+						if(Pet.Xpos >= Enem.Xpos - 40){
 							if(pressed & KEY_A){
-								int blocked = rand() % 100;
-								if(blocked <= 49){
+								if(canCrit == true){
+									CritEffect.anim_frame = 2;
+									CritEffect.Xpos = Enem.Xpos - 32;
+									CritTime = 0;
 									BattlePlayerHealth++;
 								}
+							}
+						}
+						else{
+							if(pressed & KEY_A){
+								canCrit = false;
 							}
 						}
 					}
@@ -1118,6 +1137,13 @@ int main(void) {
 					oamClear(&oamMain, 0, 127);
 				}
 
+				if(CritTime >= 100){
+					CritEffect.anim_frame = 0;
+				}
+				else{
+					CritTime++;
+				}
+
 				TimeBetweenFramesDone++;
 				if(TimeBetweenFramesDone >= TimeBetweenFrames){
 					TimeBetweenFramesDone = 0;
@@ -1143,6 +1169,8 @@ int main(void) {
 				animate16(&PlayerAttack);
 				animate16(&EnemyAttack);
 
+				animate3216(&CritEffect);
+
 				oamSet(&oamMain, 0, Pet.Xpos, Pet.Ypos, 0, Pet.palette, SpriteSize_32x32, SpriteColorFormat_256Color, 
 					Pet.sprite_gfx_mem, -1, false, false, false, false, false);
 				if(battleState != 4 && battleState != 5){
@@ -1152,6 +1180,8 @@ int main(void) {
 						PlayerAttack.sprite_gfx_mem, -1, false, false, false, false, false);
 					oamSet(&oamMain, 3, 256 - 32, 16, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
 						EnemyAttack.sprite_gfx_mem, -1, false, false, false, false, false);
+					oamSet(&oamMain, 4, CritEffect.Xpos, Pet.Ypos - 24, 0, 6, SpriteSize_32x16, SpriteColorFormat_256Color, 
+						CritEffect.sprite_gfx_mem, -1, false, false, false, false, false);
 				}
 			}
 			else{

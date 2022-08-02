@@ -227,6 +227,22 @@ void init8Sub(Sprite *sprite, u8* gfx)
 	sprite->frame_gfx = (u8*)gfx;
 }
 
+void animate3216(Sprite *sprite)
+{
+	int frame = sprite->anim_frame + sprite->state * FRAMES_PER_ANIMATION;
+
+	u8* offset = sprite->frame_gfx + frame * 32*16;
+
+	dmaCopy(offset, sprite->sprite_gfx_mem, 32*16);
+}
+
+void init3216(Sprite *sprite, u8* gfx)
+{
+	sprite->sprite_gfx_mem = oamAllocateGfx(&oamMain, SpriteSize_32x16, SpriteColorFormat_256Color);
+	
+	sprite->frame_gfx = (u8*)gfx;
+}
+
 bool CollisionCheck(Box r1, Box r2){
 	return(r1.Xpos < r2.Xpos + r2.SizeX && r1.Xpos + r1.SizeX > r2.Xpos && r1.Ypos < r2.Ypos + r2.SizeY && r1.Ypos + r1.SizeY > r2.Ypos);
 }
