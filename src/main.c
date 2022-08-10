@@ -289,27 +289,27 @@ int main(void) {
 	init32(&BSOL, (u8*)BSODTiles);
 	dmaCopy(BSODPal, &VRAM_F_EXT_SPR_PALETTE[1][0],BSODPalLen);
 	init32(&Three, (u8*)ThreeTiles);
-	dmaCopy(ThreePal, &VRAM_F_EXT_SPR_PALETTE[3][0],ThreePalLen);
+	dmaCopy(ThreePal, &VRAM_F_EXT_SPR_PALETTE[2][0],ThreePalLen);
 	init32(&Four, (u8*)FourTiles);
-	dmaCopy(FourPal, &VRAM_F_EXT_SPR_PALETTE[4][0],FourPalLen);
+	dmaCopy(FourPal, &VRAM_F_EXT_SPR_PALETTE[3][0],FourPalLen);
 	init32(&Five, (u8*)FiveTiles);
-	dmaCopy(FivePal, &VRAM_F_EXT_SPR_PALETTE[5][0],FivePalLen);
+	dmaCopy(FivePal, &VRAM_F_EXT_SPR_PALETTE[4][0],FivePalLen);
 	//Enemy
 	init32(&PhantomEnem, (u8*)GhostTiles);
 	dmaCopy(GhostPal, &VRAM_F_EXT_SPR_PALETTE[0][0],GhostPalLen);
 	init32(&BSOLEnem, (u8*)BSODTiles);
 	dmaCopy(BSODPal, &VRAM_F_EXT_SPR_PALETTE[1][0],BSODPalLen);
 	init32(&ThreeEnem, (u8*)ThreeTiles);
-	dmaCopy(ThreePal, &VRAM_F_EXT_SPR_PALETTE[3][0],ThreePalLen);
+	dmaCopy(ThreePal, &VRAM_F_EXT_SPR_PALETTE[2][0],ThreePalLen);
 	init32(&FourEnem, (u8*)FourTiles);
-	dmaCopy(FourPal, &VRAM_F_EXT_SPR_PALETTE[4][0],FourPalLen);
+	dmaCopy(FourPal, &VRAM_F_EXT_SPR_PALETTE[3][0],FourPalLen);
 	init32(&FiveEnem, (u8*)FiveTiles);
-	dmaCopy(FivePal, &VRAM_F_EXT_SPR_PALETTE[5][0],FivePalLen);
+	dmaCopy(FivePal, &VRAM_F_EXT_SPR_PALETTE[4][0],FivePalLen);
 	//Battle Choices
 	init32(&EnemyAttack, (u8*)BattleIconsTiles);
-	dmaCopy(BattleIconsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],BattleIconsPalLen);
+	dmaCopy(BattleIconsPal, &VRAM_F_EXT_SPR_PALETTE[5][0],BattleIconsPalLen);
 	init32(&PlayerAttack, (u8*)BattleIconsTiles);
-	dmaCopy(BattleIconsPal, &VRAM_F_EXT_SPR_PALETTE[2][0],BattleIconsPalLen);
+	dmaCopy(BattleIconsPal, &VRAM_F_EXT_SPR_PALETTE[5][0],BattleIconsPalLen);
 	//Crit
 	init3216(&CritEffect, (u8*)CritTiles);
 	dmaCopy(CritPal, &VRAM_F_EXT_SPR_PALETTE[6][0],CritPalLen);
@@ -382,17 +382,17 @@ int main(void) {
 	else if(PetYouHave == 2){
 		Pet.sprite_gfx_mem = Three.sprite_gfx_mem;
 		Pet.frame_gfx = Three.frame_gfx;
-		Pet.palette = 3;
+		Pet.palette = 2;
 	}
 	else if(PetYouHave == 3){
 		Pet.sprite_gfx_mem = Four.sprite_gfx_mem;
 		Pet.frame_gfx = Four.frame_gfx;
-		Pet.palette = 4;
+		Pet.palette = 3;
 	}
 	else if(PetYouHave == 4){
 		Pet.sprite_gfx_mem = Five.sprite_gfx_mem;
 		Pet.frame_gfx = Five.frame_gfx;
-		Pet.palette = 5;
+		Pet.palette = 4;
 	}
 
 	//Title screen background.
@@ -1176,9 +1176,9 @@ int main(void) {
 				if(battleState != 4 && battleState != 5){
 					oamSet(&oamMain, 1, Enem.Xpos, Enem.Ypos, 0, Enem.palette, SpriteSize_32x32, SpriteColorFormat_256Color, 
 						Enem.sprite_gfx_mem, -1, false, false, false, false, false);
-					oamSet(&oamMain, 2, 16, 16, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					oamSet(&oamMain, 2, 16, 16, 0, 5, SpriteSize_16x16, SpriteColorFormat_256Color, 
 						PlayerAttack.sprite_gfx_mem, -1, false, false, false, false, false);
-					oamSet(&oamMain, 3, 256 - 32, 16, 0, 2, SpriteSize_16x16, SpriteColorFormat_256Color, 
+					oamSet(&oamMain, 3, 256 - 32, 16, 0, 5, SpriteSize_16x16, SpriteColorFormat_256Color, 
 						EnemyAttack.sprite_gfx_mem, -1, false, false, false, false, false);
 					oamSet(&oamMain, 4, CritEffect.Xpos, Pet.Ypos - 24, 0, 6, SpriteSize_32x16, SpriteColorFormat_256Color, 
 						CritEffect.sprite_gfx_mem, -1, false, false, false, false, false);
@@ -1292,17 +1292,17 @@ void openOfflineBattle(){
 	else if(EnemyPet == 2){
 		Enem.sprite_gfx_mem = ThreeEnem.sprite_gfx_mem;
 		Enem.frame_gfx = ThreeEnem.frame_gfx;
-		Enem.palette = 3;
+		Enem.palette = 2;
 	}
 	else if(EnemyPet == 3){
 		Enem.sprite_gfx_mem = FourEnem.sprite_gfx_mem;
 		Enem.frame_gfx = FourEnem.frame_gfx;
-		Enem.palette = 4;
+		Enem.palette = 3;
 	}
 	else if(EnemyPet == 4){
 		Enem.sprite_gfx_mem = FiveEnem.sprite_gfx_mem;
 		Enem.frame_gfx = FiveEnem.frame_gfx;
-		Enem.palette = 5;
+		Enem.palette = 4;
 	}
 	
 
